@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "mss_nwc_init.h": "c",
+        "mss_hal.h": "c",
+        "system_startup_defs.h": "c",
+        "stdbool.h": "c",
+        "rtdef.h": "c",
+        "rtconfig.h": "c"
+    }
+}

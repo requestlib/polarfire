@@ -8,6 +8,7 @@
 #define COMMON_H_
 
 #include <stdint.h>
+#include <board.h>
 #include "drivers/mss/mss_mmuart/mss_uart.h"
 
 typedef enum COMMAND_TYPE_

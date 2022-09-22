@@ -17,7 +17,7 @@
 #include "../common/bits.h"
 #include "../common/encoding.h"
 #include "../common/mss_mtrap.h"
-#include "system_startup_defs.h"
+#include "board_defs.h"
 #include "mpfs_hal_config/mss_sw_config.h"
 
   .option norvc
