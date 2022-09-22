@@ -62,16 +62,11 @@ void e51(void)
 
         if (0x100000U == icount)
         {
-            icount = 0U;
+            MSS_UART_polled_tx(&g_mss_uart0_lo, "hello\n",sizeof("hello\n"));
+            icount=0;
         }
     }
 
     /* never return */
 }
 
-/* hart0 software interrupt handler */
-void Software_h0_IRQHandler(void)
-{
-    uint64_t hart_id = read_csr(mhartid);
-    count_sw_ints_h0++;
-}

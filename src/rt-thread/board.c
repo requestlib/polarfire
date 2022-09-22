@@ -10,257 +10,112 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "mpfs_hal/mss_hal.h"
-#ifdef  MPFS_HAL_HW_CONFIG
 #include "mpfs_hal/common/nwc/mss_nwc_init.h"
 #include "board.h"
-#endif
 
+void rt_hw_board_init(HLS_DATA* hls){
+    uint8_t hart_id;
+    ptrdiff_t stack_top;
 
-/*==============================================================================
- * This function is called by the lowest enabled hart (MPFS_HAL_FIRST_HART) in
- * the configuration file (platform/config/software/mpfs_hal/mss_sw_config.h )
- *
- * The other harts up to MPFS_HAL_LAST_HART are placed in wfi at this point.
- * This function brings them out of wfi in sequence.
- * If you need to modify this function, create your own one in a user directory
- * space
- * e.g. /hart0/e51.c
- */
-__attribute__((weak)) int main_first_hart(HLS_DATA* hls)
-{
-    uint64_t hartid = read_csr(mhartid);
-
-    if(hartid == MPFS_HAL_FIRST_HART)
-    {
-        uint8_t hart_id;
-        ptrdiff_t stack_top;
-
-        /*
-         * We only use code within the conditional compile
-         * #ifdef MPFS_HAL_HW_CONFIG
-         * if this program is used as part of the initial board bring-up
-         * Please comment/uncomment MPFS_HAL_HW_CONFIG define in
-         * platform/config/software/mpfs_hal/sw_config.h
-         * as required.
-         */
-#ifdef  MPFS_HAL_HW_CONFIG
-        config_l2_cache();
-#endif  /* MPFS_HAL_HW_CONFIG */
-
-        init_memory();
-#ifndef MPFS_HAL_HW_CONFIG
-        hls->my_hart_id = MPFS_HAL_FIRST_HART;
-#endif
-#ifdef  MPFS_HAL_HW_CONFIG
-        load_virtual_rom();
-        (void)init_bus_error_unit();
-        (void)init_mem_protection_unit();
-        (void)init_pmp((uint8_t)MPFS_HAL_FIRST_HART);
-        (void)mss_set_apb_bus_cr((uint32_t)LIBERO_SETTING_APBBUS_CR);
-#endif  /* MPFS_HAL_HW_CONFIG */
-        /*
-         * Initialise NWC
-         *      Clocks
-         *      SGMII
-         *      DDR
-         *      IOMUX
-         */
-#ifdef  MPFS_HAL_HW_CONFIG
-        (void)mss_nwc_init();
-
-        /* main hart init's the PLIC */
-        PLIC_init_on_reset();
-        /*
-         * Start the other harts. They are put in wfi in entry.S
-         * When debugging, harts are released from reset separately,
-         * so we need to make sure hart is in wfi before we try and release.
-        */
-        stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h0$);
-        hls = (HLS_DATA*)(stack_top - HLS_DEBUG_AREA_SIZE);
-        hls->in_wfi_indicator = HLS_MAIN_HART_STARTED;
-        hls->my_hart_id = MPFS_HAL_FIRST_HART;
-        WFI_SM sm_check_thread = INIT_THREAD_PR;
-        hart_id = MPFS_HAL_FIRST_HART + 1U;
-        while( hart_id <= MPFS_HAL_LAST_HART)
-        {
-            uint32_t wait_count = 0U;
-
-            switch(sm_check_thread)
-            {
-                default:
-                case INIT_THREAD_PR:
-
-                    switch (hart_id)
-                    {
-                        case 1:
-                            stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h1$);
-                            break;
-                        case 2:
-                            stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h2$);
-                            break;
-                        case 3:
-                            stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h3$);
-                            break;
-                        case 4:
-                            stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h4$);
-                            break;
-                    }
-                    hls = (HLS_DATA*)(stack_top - HLS_DEBUG_AREA_SIZE);
-                    sm_check_thread = CHECK_WFI;
-                    wait_count = 0U;
-                    break;
-
-                case CHECK_WFI:
-                    if( hls->in_wfi_indicator == HLS_OTHER_HART_IN_WFI )
-                    {
-                        /* Separate state- to add a little delay */
-                        sm_check_thread = SEND_WFI;
-                    }
-                    break;
-
-                case SEND_WFI:
-                    hls->my_hart_id = hart_id; /* record hartid locally */
-                    raise_soft_interrupt(hart_id);
-                    sm_check_thread = CHECK_WAKE;
-                    wait_count = 0UL;
-                    break;
-
-                case CHECK_WAKE:
-                    if( hls->in_wfi_indicator == HLS_OTHER_HART_PASSED_WFI )
-                    {
-                        sm_check_thread = INIT_THREAD_PR;
-                        hart_id++;
-                        wait_count = 0UL;
-                    }
-                    else
-                    {
-                        wait_count++;
-                        if(wait_count > 0x10U)
-                        {
-                            if( hls->in_wfi_indicator == HLS_OTHER_HART_IN_WFI )
-                            {
-                                hls->my_hart_id = hart_id; /* record hartid locally */
-                                raise_soft_interrupt(hart_id);
-                                wait_count = 0UL;
-                            }
-                        }
-                    }
-                    break;
-            }
-        }
-        stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h0$);
-        hls = (HLS_DATA*)(stack_top - HLS_DEBUG_AREA_SIZE);
-        hls->in_wfi_indicator = HLS_MAIN_HART_FIN_INIT;
-
-        /*
-         * Turn on fic interfaces by default. Drivers will turn on/off other MSS
-         * peripherals as required.
-         */
-        (void)mss_config_clk_rst(MSS_PERIPH_FIC0, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
-        (void)mss_config_clk_rst(MSS_PERIPH_FIC1, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
-        (void)mss_config_clk_rst(MSS_PERIPH_FIC2, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
-        (void)mss_config_clk_rst(MSS_PERIPH_FIC3, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
-
-#endif /* MPFS_HAL_HW_CONFIG */
-        (void)main_other_hart(hls);
-    }
-
-    /* should never get here */
-    while(true)
-    {
-       static volatile uint64_t counter = 0U;
-       /* Added some code as debugger hangs if in loop doing nothing */
-       counter = counter + 1U;
-    }
-
-    return (0);
-}
-
-/*==============================================================================
- * u54_single_hart startup.
- * This is called when a bootloader has loaded a single hart program.
- * A pointer to the hart Local Storage (HLS) is passed here which has been
- * passed by the boot program in the a1 register.
- * The HLS contains the hartID.
- * It also contains a pointer to shared memory
- * Information on the HLS used in the bare metal examples.
- *           The HLS is a small amount of memory dedicated to each hart.
- *           The HLS also contains a pointer to shared memory.
- *           The shared memory is accessible by all harts if used. It is
- *           allocated by the boot-loader if the MPFS_HAL_SHARED_MEM_ENABLED
- *           is defined in the mss_sw_config.h file project configuration file.
- * Please see the project mpfs-hal-run-from-ddr-u54-1 located in the Bare Metal
- * library under examples/mpfs-hal for an example of it use.
- *
- * https://github.com/polarfire-soc/polarfire-soc-bare-metal-library
- *
- * If you need to modify this function, create your own one in a user directory
- * space
- * e.g. /hart1/x.c
- */
-__attribute__((weak)) int u54_single_hart(HLS_DATA* hls)
-{
+    config_l2_cache();
     init_memory();
     hls->my_hart_id = MPFS_HAL_FIRST_HART;
-#ifdef  MPFS_HAL_SHARED_MEM_ENABLED
-    /* if shared memory enabled, pointer from Boot-loader in the HLS should be
-     * non-zero */
-    ASSERT(hls->shared_mem != NULL);
-#endif
-    switch(hls->my_hart_id)
+    load_virtual_rom();
+    (void)init_bus_error_unit();
+    (void)init_mem_protection_unit();
+    (void)init_pmp((uint8_t)MPFS_HAL_FIRST_HART);
+    (void)mss_set_apb_bus_cr((uint32_t)LIBERO_SETTING_APBBUS_CR);
+    (void)mss_nwc_init();
+
+    /* main hart init's the PLIC */
+    PLIC_init_on_reset();
+    stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h0$);
+    hls = (HLS_DATA*)(stack_top - HLS_DEBUG_AREA_SIZE);
+    hls->in_wfi_indicator = HLS_MAIN_HART_STARTED;
+    hls->my_hart_id = MPFS_HAL_FIRST_HART;
+    WFI_SM sm_check_thread = INIT_THREAD_PR;
+    hart_id = MPFS_HAL_FIRST_HART + 1U;
+    while( hart_id <= MPFS_HAL_LAST_HART)
     {
-        case 0U:
-            e51();
-            break;
+        uint32_t wait_count = 0U;
 
-        case 1U:
-            u54_1();
-            break;
+        switch(sm_check_thread)
+        {
+            default:
+            case INIT_THREAD_PR:
 
-        case 2U:
-            u54_2();
-            break;
+                switch (hart_id)
+                {
+                    case 1:
+                        stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h1$);
+                        break;
+                    case 2:
+                        stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h2$);
+                        break;
+                    case 3:
+                        stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h3$);
+                        break;
+                    case 4:
+                        stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h4$);
+                        break;
+                }
+                hls = (HLS_DATA*)(stack_top - HLS_DEBUG_AREA_SIZE);
+                sm_check_thread = CHECK_WFI;
+                wait_count = 0U;
+                break;
 
-        case 3U:
-            u54_3();
-            break;
+            case CHECK_WFI:
+                if( hls->in_wfi_indicator == HLS_OTHER_HART_IN_WFI )
+                {
+                    /* Separate state- to add a little delay */
+                    sm_check_thread = SEND_WFI;
+                }
+                break;
 
-        case 4U:
-            u54_4();
-            break;
+            case SEND_WFI:
+                hls->my_hart_id = hart_id; /* record hartid locally */
+                raise_soft_interrupt(hart_id);
+                sm_check_thread = CHECK_WAKE;
+                wait_count = 0UL;
+                break;
 
-        default:
-            /* no more harts */
-            break;
+            case CHECK_WAKE:
+                if( hls->in_wfi_indicator == HLS_OTHER_HART_PASSED_WFI )
+                {
+                    sm_check_thread = INIT_THREAD_PR;
+                    hart_id++;
+                    wait_count = 0UL;
+                }
+                else
+                {
+                    wait_count++;
+                    if(wait_count > 0x10U)
+                    {
+                        if( hls->in_wfi_indicator == HLS_OTHER_HART_IN_WFI )
+                        {
+                            hls->my_hart_id = hart_id; /* record hartid locally */
+                            raise_soft_interrupt(hart_id);
+                            wait_count = 0UL;
+                        }
+                    }
+                }
+                break;
+        }
     }
+    stack_top = (ptrdiff_t)((uint8_t*)&__stack_top_h0$);
+    hls = (HLS_DATA*)(stack_top - HLS_DEBUG_AREA_SIZE);
+    hls->in_wfi_indicator = HLS_MAIN_HART_FIN_INIT;
 
-    /* should never get here */
-    while(true)
-    {
-       static volatile uint64_t counter = 0U;
-       /* Added some code as debugger hangs if in loop doing nothing */
-       counter = counter + 1U;
-    }
+    (void)mss_config_clk_rst(MSS_PERIPH_FIC0, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
+    (void)mss_config_clk_rst(MSS_PERIPH_FIC1, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
+    (void)mss_config_clk_rst(MSS_PERIPH_FIC2, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
+    (void)mss_config_clk_rst(MSS_PERIPH_FIC3, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
 
-    return (0);
+    (void)rt_hw_board_init_other(hls);
 }
 
-/*==============================================================================
- * U54s startup.
- * This is called from entry.S
- * If you need to modify this function, create your own one in a user directory
- * space.
- *
- * Please note: harts MPFS_HAL_FIRST_FIRST + 1 to MPFS_HAL_FIRST_LAST will wait
- * in startup code in entry.S as they run the wfi (wait for interrupt)
- * instruction.
- * They are woken up as required by the the MPFS_HAL_FIRST_HART, in the function
- * main_first_hart().
- * ( It triggers a software interrupt on the particular hart to be woken up )
- */
-__attribute__((weak)) int main_other_hart(HLS_DATA* hls)
-{
-#ifdef  MPFS_HAL_HW_CONFIG
+
+void rt_hw_board_init_other(HLS_DATA* hls){
     extern char __app_stack_top_h0;
     extern char __app_stack_top_h1;
     extern char __app_stack_top_h2;
@@ -273,82 +128,43 @@ __attribute__((weak)) int main_other_hart(HLS_DATA* hls)
     const uint64_t app_stack_top_h3 = (const uint64_t)&__app_stack_top_h3 - (HLS_DEBUG_AREA_SIZE);
     const uint64_t app_stack_top_h4 = (const uint64_t)&__app_stack_top_h4 - (HLS_DEBUG_AREA_SIZE);
 
-#ifdef  MPFS_HAL_HW_CONFIG
-#ifdef  MPFS_HAL_SHARED_MEM_ENABLED
-    /*
-     * If we are a boot-loader, and shared memory enabled (MPFS_HAL_SHARED_MEM_ENABLED)
-     * sets the pointer in each harts HLS to the shared memory.
-     * This allows access to this shared memory across all harts.
-     */
     const uint64_t app_hart_common_start = (const uint64_t)&__app_hart_common_start;
     hls->shared_mem = (uint64_t *)app_hart_common_start;
     hls->shared_mem_marker = SHARED_MEM_INITALISED_MARKER;
     hls->shared_mem_status = SHARED_MEM_DEFAULT_STATUS;
-#endif
-#else
-#ifdef  MPFS_HAL_SHARED_MEM_ENABLED
-    /* make sure each harts Harts Local Storage has pointer to common memory if enabled */
-    /* store the value here received from boot-loader */
-    /* a1 will contain pointer to the start of shared memory */
-    //hls->shared_mem = (uint64_t *)__uninit_bottom$;
-#else
-    /*
-     * We are not using shared memory
-     */
-    hls->shared_mem = (uint64_t *)NULL;
-#endif
-#endif
 
     volatile uint64_t dummy;
-
     switch(hls->my_hart_id)
     {
-
-    case 0U:
-        __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h0));
-        e51();
-        break;
-
-    case 1U:
-        (void)init_pmp((uint8_t)1);
-        __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h1));
-        u54_1();
-        break;
-
-    case 2U:
-        (void)init_pmp((uint8_t)2);
-        __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h2));
-        u54_2();
-        break;
-
-    case 3U:
-        (void)init_pmp((uint8_t)3);
-        __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h3));
-        u54_3();
-        break;
-
-    case 4U:
-        (void)init_pmp((uint8_t)4);
-        __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h4));
-        u54_4();
-        break;
-
-    default:
-        /* no more harts */
-        break;
+        case 0U:
+            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h0));
+            e51();
+            break;
+        case 1U:
+            (void)init_pmp((uint8_t)1);
+            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h1));
+            u54_1();
+            break;
+        case 2U:
+            (void)init_pmp((uint8_t)2);
+            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h2));
+            u54_2();
+            break;
+        case 3U:
+            (void)init_pmp((uint8_t)3);
+            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h3));
+            u54_3();
+            break;
+        case 4U:
+            (void)init_pmp((uint8_t)4);
+            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h4));
+            u54_4();
+            break;
+        default:
+            break;
     }
-
-    /* should never get here */
-    while(true)
-    {
-       static volatile uint64_t counter = 0U;
-       /* Added some code as debugger hangs if in loop doing nothing */
-       counter = counter + 1U;
-    }
-#endif
-  return (0);
-
 }
+
 
 /*==============================================================================
  * Load the virtual ROM located at address 0x20003120 within the SCB system

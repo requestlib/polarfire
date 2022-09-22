@@ -215,7 +215,7 @@ _start:
 .main_hart:
     # pass HLS address
     mv  a0, tp
-    j main_first_hart
+    j primary_cpu_entry
 .LoopForeverMain:
     #in case of return, loop forever. nop's added so can be seen in debugger
     nop
@@ -266,7 +266,7 @@ _start:
     sw a1, 0(tp)
     # pass HLS address
     mv  a0, tp
-    j main_other_hart
+    j other_cpu_entry
 .LoopForeverOther:
     #in case of return, loop forever. nop's added so can be seen in debugger
     nop

@@ -151,10 +151,6 @@ int rt_hw_cpu_id(void);
  */
 void rt_hw_ipi_send(int ipi_vector, unsigned int cpu_mask);
 
-/**
- * boot secondary cpu
- */
-void rt_hw_secondary_cpu_up(void);
 
 /**
  * secondary cpu idle function

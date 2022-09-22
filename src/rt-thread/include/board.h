@@ -113,8 +113,9 @@ extern unsigned long __uninit_top$;
 /*
  * Function Declarations
  */
-int main_first_hart(HLS_DATA* hls);
-int main_other_hart(HLS_DATA* hls);
+void rt_hw_board_init(HLS_DATA* hls);
+void rt_hw_board_init_other(HLS_DATA* hls);
+void main_first_hart(HLS_DATA* hls);
 void e51(void);
 void u54_1(void);
 void u54_2(void);

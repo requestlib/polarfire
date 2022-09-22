@@ -37,12 +37,6 @@ void rt_hw_ipi_send(int ipi_vector, unsigned int cpu_mask)
     }
 }
 
-extern rt_base_t secondary_boot_flag;
-void rt_hw_secondary_cpu_up(void)
-{
-    //mb();
-    secondary_boot_flag = 0xa55a;
-}
 
 extern void rt_hw_scondary_interrupt_init(void);
 extern int rt_hw_tick_init(void);

@@ -19,6 +19,7 @@
 
 #include <rthw.h>
 #include <rtthread.h>
+#include <mpfs_hal/common/encoding.h>
 
 #ifdef RT_USING_USER_MAIN
 #ifndef RT_MAIN_THREAD_STACK_SIZE
@@ -133,7 +134,7 @@ void rt_components_init(void)
 #ifdef RT_USING_USER_MAIN
 
 void rt_application_init(void);
-void rt_hw_board_init(void);
+//void rt_hw_board_init(HLS_DATA* hls);
 int rtthread_startup(void);
 
 #ifdef __ARMCC_VERSION
@@ -141,7 +142,7 @@ extern int $Super$$main(void);
 /* re-define main function */
 int $Sub$$main(void)
 {
-    rtthread_startup();
+    // rtthread_startup(hls);
     return 0;
 }
 #elif defined(__ICCARM__)
@@ -152,13 +153,20 @@ int __low_level_init(void)
 {
     // call IAR table copy function.
     __iar_data_init3();
-    rtthread_startup();
+    // rtthread_startup();
     return 0;
 }
 #elif defined(__GNUC__)
 /* Add -eentry to arm-none-eabi-gcc argument */
-int entry(void)
+int primary_cpu_entry(HLS_DATA* hls)
 {
+    rt_hw_board_init(hls);
+    rtthread_startup();
+    return 0;
+}
+int other_cpu_entry(HLS_DATA* hls)
+{
+    rt_hw_board_init_other(hls);
     rtthread_startup();
     return 0;
 }
@@ -233,42 +241,32 @@ void rt_application_init(void)
  */
 int rtthread_startup(void)
 {
-    rt_hw_interrupt_disable();
+    // rt_hw_interrupt_disable();
 
     /* board level initialization
      * NOTE: please initialize heap inside board initialization.
      */
-    rt_hw_board_init();
 
     /* show RT-Thread version */
-    rt_show_version();
+    // rt_show_version();
 
     /* timer system initialization */
-    rt_system_timer_init();
+    // rt_system_timer_init();
 
     /* scheduler system initialization */
-    rt_system_scheduler_init();
-
-#ifdef RT_USING_SIGNALS
-    /* signal system initialization */
-    rt_system_signal_init();
-#endif /* RT_USING_SIGNALS */
+    // rt_system_scheduler_init();
 
     /* create init_thread */
-    rt_application_init();
+    // rt_application_init();
 
     /* timer thread initialization */
-    rt_system_timer_thread_init();
+    // rt_system_timer_thread_init();
 
     /* idle thread initialization */
-    rt_thread_idle_init();
-
-#ifdef RT_USING_SMP
-    // rt_spin_lock(&_cpus_lock);
-#endif /* RT_USING_SMP */
+    // rt_thread_idle_init();
 
     /* start scheduler */
-    rt_system_scheduler_start();
+    // rt_system_scheduler_start();
 
     /* never reach here */
     return 0;
