@@ -35,7 +35,7 @@ static void thread2_entry(void *parameter)
     }
     int end = rt_cpu_self()->tick;
     int core = rt_hw_cpu_id();
-    rt_kprintf("done,total spent time:%d.\n",end-start);
+    rt_kprintf_uart1("done,total spent time:%d.\n",end-start);
 }
 
 
@@ -44,9 +44,9 @@ static void moniter_thread_entry(void *parameter){
     while(1){
         rt_thread_delay(1000);
         for(int i=0;i<RT_CPUS_NR;i++){
-            rt_kprintf("cpu[%d] usage:",i);
-            rt_kprintf(" %d%%\n", (int)get_cpu_usage(i));
-            rt_kprintf("total_tick:%d, idle_tick:%d\n",rt_cpu_self()->recent_total_ticks,rt_cpu_self()->idle_ticks);
+            rt_kprintf_uart1("cpu[%d] usage:",i);
+            rt_kprintf_uart1(" %d%%\n", (int)get_cpu_usage(i));
+            rt_kprintf_uart1("total_tick:%d, idle_tick:%d\n",rt_cpu_self()->recent_total_ticks,rt_cpu_self()->idle_ticks);
         }
         list_thread();
     }
@@ -55,7 +55,7 @@ static void moniter_thread_entry(void *parameter){
 int test_spinlock()
 {
     int core = rt_hw_cpu_id();
-    rt_kprintf("Core %d Hello world \n", core);
+    rt_kprintf_uart1("Core %d Hello world \n", core);
     if(core==0){
         tid1 = rt_thread_create("thread1", thread1_entry, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
         if(tid1 != RT_NULL){

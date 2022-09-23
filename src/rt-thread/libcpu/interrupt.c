@@ -19,7 +19,7 @@
 
 // static rt_isr_handler_t rt_hw_interrupt_handle(rt_uint32_t vector, void *param)
 // {
-//     rt_kprintf("UN-handled interrupt %d occurred!!!\n", vector);
+//     rt_kprintf_uart1("UN-handled interrupt %d occurred!!!\n", vector);
 //     return RT_NULL;
 // }
 
@@ -261,39 +261,39 @@
 // {
 //     struct exception_stack_frame * esf = (struct exception_stack_frame *)(sp+1);
 
-//     rt_kprintf("\n=================================================================\n");
-//     rt_kprintf("x1 (ra   : Return address                ) ==> 0x%08x%08x\n", esf->x1 >> 32  , esf->x1 & UINT32_MAX);
-//     rt_kprintf("x2 (sp   : Stack pointer                 ) ==> 0x%08x%08x\n", esf->x2 >> 32  , esf->x2 & UINT32_MAX);
-//     rt_kprintf("x3 (gp   : Global pointer                ) ==> 0x%08x%08x\n", esf->x3 >> 32  , esf->x3 & UINT32_MAX);
-//     rt_kprintf("x4 (tp   : Thread pointer                ) ==> 0x%08x%08x\n", esf->x4 >> 32  , esf->x4 & UINT32_MAX);
-//     rt_kprintf("x5 (t0   : Temporary                     ) ==> 0x%08x%08x\n", esf->x5 >> 32  , esf->x5 & UINT32_MAX);
-//     rt_kprintf("x6 (t1   : Temporary                     ) ==> 0x%08x%08x\n", esf->x6 >> 32  , esf->x6 & UINT32_MAX);
-//     rt_kprintf("x7 (t2   : Temporary                     ) ==> 0x%08x%08x\n", esf->x7 >> 32  , esf->x7 & UINT32_MAX);
-//     rt_kprintf("x8 (s0/fp: Save register,frame pointer   ) ==> 0x%08x%08x\n", esf->x8 >> 32  , esf->x8 & UINT32_MAX);
-//     rt_kprintf("x9 (s1   : Save register                 ) ==> 0x%08x%08x\n", esf->x9 >> 32  , esf->x9 & UINT32_MAX);
-//     rt_kprintf("x10(a0   : Function argument,return value) ==> 0x%08x%08x\n", esf->x10 >> 32 , esf->x10 & UINT32_MAX);
-//     rt_kprintf("x11(a1   : Function argument,return value) ==> 0x%08x%08x\n", esf->x11 >> 32 , esf->x11 & UINT32_MAX);
-//     rt_kprintf("x12(a2   : Function argument             ) ==> 0x%08x%08x\n", esf->x12 >> 32 , esf->x12 & UINT32_MAX);
-//     rt_kprintf("x13(a3   : Function argument             ) ==> 0x%08x%08x\n", esf->x13 >> 32 , esf->x13 & UINT32_MAX);
-//     rt_kprintf("x14(a4   : Function argument             ) ==> 0x%08x%08x\n", esf->x14 >> 32 , esf->x14 & UINT32_MAX);
-//     rt_kprintf("x15(a5   : Function argument             ) ==> 0x%08x%08x\n", esf->x15 >> 32 , esf->x15 & UINT32_MAX);
-//     rt_kprintf("x16(a6   : Function argument             ) ==> 0x%08x%08x\n", esf->x16 >> 32 , esf->x16 & UINT32_MAX);
-//     rt_kprintf("x17(a7   : Function argument             ) ==> 0x%08x%08x\n", esf->x17 >> 32 , esf->x17 & UINT32_MAX);
-//     rt_kprintf("x18(s2   : Save register                 ) ==> 0x%08x%08x\n", esf->x18 >> 32 , esf->x18 & UINT32_MAX);
-//     rt_kprintf("x19(s3   : Save register                 ) ==> 0x%08x%08x\n", esf->x19 >> 32 , esf->x19 & UINT32_MAX);
-//     rt_kprintf("x20(s4   : Save register                 ) ==> 0x%08x%08x\n", esf->x20 >> 32 , esf->x20 & UINT32_MAX);
-//     rt_kprintf("x21(s5   : Save register                 ) ==> 0x%08x%08x\n", esf->x21 >> 32 , esf->x21 & UINT32_MAX);
-//     rt_kprintf("x22(s6   : Save register                 ) ==> 0x%08x%08x\n", esf->x22 >> 32 , esf->x22 & UINT32_MAX);
-//     rt_kprintf("x23(s7   : Save register                 ) ==> 0x%08x%08x\n", esf->x23 >> 32 , esf->x23 & UINT32_MAX);
-//     rt_kprintf("x24(s8   : Save register                 ) ==> 0x%08x%08x\n", esf->x24 >> 32 , esf->x24 & UINT32_MAX);
-//     rt_kprintf("x25(s9   : Save register                 ) ==> 0x%08x%08x\n", esf->x25 >> 32 , esf->x25 & UINT32_MAX);
-//     rt_kprintf("x26(s10  : Save register                 ) ==> 0x%08x%08x\n", esf->x26 >> 32 , esf->x26 & UINT32_MAX);
-//     rt_kprintf("x27(s11  : Save register                 ) ==> 0x%08x%08x\n", esf->x27 >> 32 , esf->x27 & UINT32_MAX);
-//     rt_kprintf("x28(t3   : Temporary                     ) ==> 0x%08x%08x\n", esf->x28 >> 32 , esf->x28 & UINT32_MAX);
-//     rt_kprintf("x29(t4   : Temporary                     ) ==> 0x%08x%08x\n", esf->x29 >> 32 , esf->x29 & UINT32_MAX);
-//     rt_kprintf("x30(t5   : Temporary                     ) ==> 0x%08x%08x\n", esf->x30 >> 32 , esf->x30 & UINT32_MAX);
-//     rt_kprintf("x31(t6   : Temporary                     ) ==> 0x%08x%08x\n", esf->x31 >> 32 , esf->x31 & UINT32_MAX);
-//     rt_kprintf("=================================================================\n");
+//     rt_kprintf_uart1("\n=================================================================\n");
+//     rt_kprintf_uart1("x1 (ra   : Return address                ) ==> 0x%08x%08x\n", esf->x1 >> 32  , esf->x1 & UINT32_MAX);
+//     rt_kprintf_uart1("x2 (sp   : Stack pointer                 ) ==> 0x%08x%08x\n", esf->x2 >> 32  , esf->x2 & UINT32_MAX);
+//     rt_kprintf_uart1("x3 (gp   : Global pointer                ) ==> 0x%08x%08x\n", esf->x3 >> 32  , esf->x3 & UINT32_MAX);
+//     rt_kprintf_uart1("x4 (tp   : Thread pointer                ) ==> 0x%08x%08x\n", esf->x4 >> 32  , esf->x4 & UINT32_MAX);
+//     rt_kprintf_uart1("x5 (t0   : Temporary                     ) ==> 0x%08x%08x\n", esf->x5 >> 32  , esf->x5 & UINT32_MAX);
+//     rt_kprintf_uart1("x6 (t1   : Temporary                     ) ==> 0x%08x%08x\n", esf->x6 >> 32  , esf->x6 & UINT32_MAX);
+//     rt_kprintf_uart1("x7 (t2   : Temporary                     ) ==> 0x%08x%08x\n", esf->x7 >> 32  , esf->x7 & UINT32_MAX);
+//     rt_kprintf_uart1("x8 (s0/fp: Save register,frame pointer   ) ==> 0x%08x%08x\n", esf->x8 >> 32  , esf->x8 & UINT32_MAX);
+//     rt_kprintf_uart1("x9 (s1   : Save register                 ) ==> 0x%08x%08x\n", esf->x9 >> 32  , esf->x9 & UINT32_MAX);
+//     rt_kprintf_uart1("x10(a0   : Function argument,return value) ==> 0x%08x%08x\n", esf->x10 >> 32 , esf->x10 & UINT32_MAX);
+//     rt_kprintf_uart1("x11(a1   : Function argument,return value) ==> 0x%08x%08x\n", esf->x11 >> 32 , esf->x11 & UINT32_MAX);
+//     rt_kprintf_uart1("x12(a2   : Function argument             ) ==> 0x%08x%08x\n", esf->x12 >> 32 , esf->x12 & UINT32_MAX);
+//     rt_kprintf_uart1("x13(a3   : Function argument             ) ==> 0x%08x%08x\n", esf->x13 >> 32 , esf->x13 & UINT32_MAX);
+//     rt_kprintf_uart1("x14(a4   : Function argument             ) ==> 0x%08x%08x\n", esf->x14 >> 32 , esf->x14 & UINT32_MAX);
+//     rt_kprintf_uart1("x15(a5   : Function argument             ) ==> 0x%08x%08x\n", esf->x15 >> 32 , esf->x15 & UINT32_MAX);
+//     rt_kprintf_uart1("x16(a6   : Function argument             ) ==> 0x%08x%08x\n", esf->x16 >> 32 , esf->x16 & UINT32_MAX);
+//     rt_kprintf_uart1("x17(a7   : Function argument             ) ==> 0x%08x%08x\n", esf->x17 >> 32 , esf->x17 & UINT32_MAX);
+//     rt_kprintf_uart1("x18(s2   : Save register                 ) ==> 0x%08x%08x\n", esf->x18 >> 32 , esf->x18 & UINT32_MAX);
+//     rt_kprintf_uart1("x19(s3   : Save register                 ) ==> 0x%08x%08x\n", esf->x19 >> 32 , esf->x19 & UINT32_MAX);
+//     rt_kprintf_uart1("x20(s4   : Save register                 ) ==> 0x%08x%08x\n", esf->x20 >> 32 , esf->x20 & UINT32_MAX);
+//     rt_kprintf_uart1("x21(s5   : Save register                 ) ==> 0x%08x%08x\n", esf->x21 >> 32 , esf->x21 & UINT32_MAX);
+//     rt_kprintf_uart1("x22(s6   : Save register                 ) ==> 0x%08x%08x\n", esf->x22 >> 32 , esf->x22 & UINT32_MAX);
+//     rt_kprintf_uart1("x23(s7   : Save register                 ) ==> 0x%08x%08x\n", esf->x23 >> 32 , esf->x23 & UINT32_MAX);
+//     rt_kprintf_uart1("x24(s8   : Save register                 ) ==> 0x%08x%08x\n", esf->x24 >> 32 , esf->x24 & UINT32_MAX);
+//     rt_kprintf_uart1("x25(s9   : Save register                 ) ==> 0x%08x%08x\n", esf->x25 >> 32 , esf->x25 & UINT32_MAX);
+//     rt_kprintf_uart1("x26(s10  : Save register                 ) ==> 0x%08x%08x\n", esf->x26 >> 32 , esf->x26 & UINT32_MAX);
+//     rt_kprintf_uart1("x27(s11  : Save register                 ) ==> 0x%08x%08x\n", esf->x27 >> 32 , esf->x27 & UINT32_MAX);
+//     rt_kprintf_uart1("x28(t3   : Temporary                     ) ==> 0x%08x%08x\n", esf->x28 >> 32 , esf->x28 & UINT32_MAX);
+//     rt_kprintf_uart1("x29(t4   : Temporary                     ) ==> 0x%08x%08x\n", esf->x29 >> 32 , esf->x29 & UINT32_MAX);
+//     rt_kprintf_uart1("x30(t5   : Temporary                     ) ==> 0x%08x%08x\n", esf->x30 >> 32 , esf->x30 & UINT32_MAX);
+//     rt_kprintf_uart1("x31(t6   : Temporary                     ) ==> 0x%08x%08x\n", esf->x31 >> 32 , esf->x31 & UINT32_MAX);
+//     rt_kprintf_uart1("=================================================================\n");
 // }
 
 
@@ -339,53 +339,53 @@
 //         rt_hw_interrupt_disable();
 
 //         tid = rt_thread_self();
-//         rt_kprintf("\nException:\n");
+//         rt_kprintf_uart1("\nException:\n");
 //         switch (cause)
 //         {
 //             case CAUSE_MISALIGNED_FETCH:
-//                 rt_kprintf("Instruction address misaligned");
+//                 rt_kprintf_uart1("Instruction address misaligned");
 //                 break;
 //             case CAUSE_FAULT_FETCH:
-//                 rt_kprintf("Instruction access fault");
+//                 rt_kprintf_uart1("Instruction access fault");
 //                 break;
 //             case CAUSE_ILLEGAL_INSTRUCTION:
-//                 rt_kprintf("Illegal instruction");
+//                 rt_kprintf_uart1("Illegal instruction");
 //                 break;
 //             case CAUSE_BREAKPOINT:
-//                 rt_kprintf("Breakpoint");
+//                 rt_kprintf_uart1("Breakpoint");
 //                 break;
 //             case CAUSE_MISALIGNED_LOAD:
-//                 rt_kprintf("Load address misaligned");
+//                 rt_kprintf_uart1("Load address misaligned");
 //                 break;
 //             case CAUSE_FAULT_LOAD:
-//                 rt_kprintf("Load access fault");
+//                 rt_kprintf_uart1("Load access fault");
 //                 break;
 //             case CAUSE_MISALIGNED_STORE:
-//                 rt_kprintf("Store address misaligned");
+//                 rt_kprintf_uart1("Store address misaligned");
 //                 break;
 //             case CAUSE_FAULT_STORE:
-//                 rt_kprintf("Store access fault");
+//                 rt_kprintf_uart1("Store access fault");
 //                 break;
 //             case CAUSE_USER_ECALL:
-//                 rt_kprintf("Environment call from U-mode");
+//                 rt_kprintf_uart1("Environment call from U-mode");
 //                 break;
 //             case CAUSE_SUPERVISOR_ECALL:
-//                 rt_kprintf("Environment call from S-mode");
+//                 rt_kprintf_uart1("Environment call from S-mode");
 //                 break;
 //             case CAUSE_HYPERVISOR_ECALL:
-//                 rt_kprintf("Environment call from H-mode");
+//                 rt_kprintf_uart1("Environment call from H-mode");
 //                 break;
 //             case CAUSE_MACHINE_ECALL:
-//                 rt_kprintf("Environment call from M-mode");
+//                 rt_kprintf_uart1("Environment call from M-mode");
 //                 break;
 //             default:
-//                 rt_kprintf("Uknown exception : %08lX", cause);
+//                 rt_kprintf_uart1("Uknown exception : %08lX", cause);
 //                 break;
 //         }
-//         rt_kprintf("\n");
+//         rt_kprintf_uart1("\n");
 //         print_stack_frame(sp);
-//         rt_kprintf("exception pc => 0x%08x\n", epc);
-//         rt_kprintf("current thread: %.*s\n", RT_NAME_MAX, tid->name);
+//         rt_kprintf_uart1("exception pc => 0x%08x\n", epc);
+//         rt_kprintf_uart1("current thread: %.*s\n", RT_NAME_MAX, tid->name);
 // #if defined(RT_USING_FINSH) && defined(MSH_USING_BUILT_IN_COMMANDS)
 //         list_thread();
 // #endif

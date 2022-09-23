@@ -52,9 +52,9 @@ static void moniter_thread_entry(void *parameter){
     while(1){
         rt_thread_delay(1000);
         for(int i=0;i<RT_CPUS_NR;i++){
-            rt_kprintf("cpu[%d] usage:",i);
-            rt_kprintf(" %d%%\n", (int)get_cpu_usage(i));
-            rt_kprintf("total_tick:%d, idle_tick:%d\n",rt_cpu_index(i)->recent_total_ticks,rt_cpu_index(i)->idle_ticks);
+            rt_kprintf_uart1("cpu[%d] usage:",i);
+            rt_kprintf_uart1(" %d%%\n", (int)get_cpu_usage(i));
+            rt_kprintf_uart1("total_tick:%d, idle_tick:%d\n",rt_cpu_index(i)->recent_total_ticks,rt_cpu_index(i)->idle_ticks);
         }
         list_thread();
     }
@@ -64,7 +64,7 @@ void test1(){
     // 测试1 存在空闲核
     // 核0持续处理任务 核1空闲
     int core = rt_hw_cpu_id();
-    rt_kprintf("Core %d Hello world \n", core);
+    rt_kprintf_uart1("Core %d Hello world \n", core);
 }
 
 int main()

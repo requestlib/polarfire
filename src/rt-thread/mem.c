@@ -217,7 +217,7 @@ void rt_system_heap_init(void *begin_addr, void *end_addr)
     }
     else
     {
-        rt_kprintf("mem init, error begin address 0x%x, and end address 0x%x\n",
+        rt_kprintf_uart1("mem init, error begin address 0x%x, and end address 0x%x\n",
                    (rt_ubase_t)begin_addr, (rt_ubase_t)end_addr);
 
         return;
@@ -588,8 +588,8 @@ void rt_free(void *rmem)
     /* ... which has to be in a used state ... */
     if (!mem->used || mem->magic != HEAP_MAGIC)
     {
-        rt_kprintf("to free a bad data block:\n");
-        rt_kprintf("mem: 0x%08x, used flag: %d, magic code: 0x%04x\n", mem, mem->used, mem->magic);
+        rt_kprintf_uart1("to free a bad data block:\n");
+        rt_kprintf_uart1("mem: 0x%08x, used flag: %d, magic code: 0x%04x\n", mem, mem->used, mem->magic);
     }
     RT_ASSERT(mem->used);
     RT_ASSERT(mem->magic == HEAP_MAGIC);
@@ -644,9 +644,9 @@ void rt_memory_info(rt_uint32_t *total,
 
 void list_mem(void)
 {
-    rt_kprintf("total memory: %d\n", mem_size_aligned);
-    rt_kprintf("used memory : %d\n", used_mem);
-    rt_kprintf("maximum allocated memory: %d\n", max_mem);
+    rt_kprintf_uart1("total memory: %d\n", mem_size_aligned);
+    rt_kprintf_uart1("used memory : %d\n", used_mem);
+    rt_kprintf_uart1("maximum allocated memory: %d\n", max_mem);
 }
 FINSH_FUNCTION_EXPORT(list_mem, list memory usage information)
 
@@ -669,11 +669,11 @@ int memcheck(void)
 
     return 0;
 __exit:
-    rt_kprintf("Memory block wrong:\n");
-    rt_kprintf("address: 0x%08x\n", mem);
-    rt_kprintf("  magic: 0x%04x\n", mem->magic);
-    rt_kprintf("   used: %d\n", mem->used);
-    rt_kprintf("  size: %d\n", mem->next - position - SIZEOF_STRUCT_MEM);
+    rt_kprintf_uart1("Memory block wrong:\n");
+    rt_kprintf_uart1("address: 0x%08x\n", mem);
+    rt_kprintf_uart1("  magic: 0x%04x\n", mem->magic);
+    rt_kprintf_uart1("   used: %d\n", mem->used);
+    rt_kprintf_uart1("  size: %d\n", mem->next - position - SIZEOF_STRUCT_MEM);
     rt_hw_interrupt_enable(level);
 
     return 0;
@@ -686,32 +686,32 @@ int memtrace(int argc, char **argv)
 
     list_mem();
 
-    rt_kprintf("\nmemory heap address:\n");
-    rt_kprintf("heap_ptr: 0x%08x\n", heap_ptr);
-    rt_kprintf("lfree   : 0x%08x\n", lfree);
-    rt_kprintf("heap_end: 0x%08x\n", heap_end);
+    rt_kprintf_uart1("\nmemory heap address:\n");
+    rt_kprintf_uart1("heap_ptr: 0x%08x\n", heap_ptr);
+    rt_kprintf_uart1("lfree   : 0x%08x\n", lfree);
+    rt_kprintf_uart1("heap_end: 0x%08x\n", heap_end);
 
-    rt_kprintf("\n--memory item information --\n");
+    rt_kprintf_uart1("\n--memory item information --\n");
     for (mem = (struct heap_mem *)heap_ptr; mem != heap_end; mem = (struct heap_mem *)&heap_ptr[mem->next])
     {
         int position = (rt_ubase_t)mem - (rt_ubase_t)heap_ptr;
         int size;
 
-        rt_kprintf("[0x%08x - ", mem);
+        rt_kprintf_uart1("[0x%08x - ", mem);
 
         size = mem->next - position - SIZEOF_STRUCT_MEM;
         if (size < 1024)
-            rt_kprintf("%5d", size);
+            rt_kprintf_uart1("%5d", size);
         else if (size < 1024 * 1024)
-            rt_kprintf("%4dK", size / 1024);
+            rt_kprintf_uart1("%4dK", size / 1024);
         else
-            rt_kprintf("%4dM", size / (1024 * 1024));
+            rt_kprintf_uart1("%4dM", size / (1024 * 1024));
 
-        rt_kprintf("] %c%c%c%c", mem->thread[0], mem->thread[1], mem->thread[2], mem->thread[3]);
+        rt_kprintf_uart1("] %c%c%c%c", mem->thread[0], mem->thread[1], mem->thread[2], mem->thread[3]);
         if (mem->magic != HEAP_MAGIC)
-            rt_kprintf(": ***\n");
+            rt_kprintf_uart1(": ***\n");
         else
-            rt_kprintf("\n");
+            rt_kprintf_uart1("\n");
     }
 
     return 0;

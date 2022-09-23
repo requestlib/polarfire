@@ -13,9 +13,9 @@
  * 2010-04-15     Bernard      remove weak definition on ICCM16C compiler
  * 2012-07-18     Arda         add the alignment display for signed integer
  * 2012-11-23     Bernard      fix IAR compiler error.
- * 2012-12-22     Bernard      fix rt_kprintf issue, which found by Grissiom.
- * 2013-06-24     Bernard      remove rt_kprintf if RT_USING_CONSOLE is not defined.
- * 2013-09-24     aozima       make sure the device is in STREAM mode when used by rt_kprintf.
+ * 2012-12-22     Bernard      fix rt_kprintf_uart1 issue, which found by Grissiom.
+ * 2013-06-24     Bernard      remove rt_kprintf_uart1 if RT_USING_CONSOLE is not defined.
+ * 2013-09-24     aozima       make sure the device is in STREAM mode when used by rt_kprintf_uart1.
  * 2015-07-06     Bernard      Add rt_assert_handler routine.
  * 2021-02-28     Meco Man     add RT_KSERVICE_USING_STDLIB
  */
@@ -582,11 +582,11 @@ char *strdup(const char *s) __attribute__((alias("rt_strdup")));
  */
 void rt_show_version(void)
 {
-    rt_kprintf("\n \\ | /\n");
-    rt_kprintf("- RT -     Thread Operating System\n");
-    rt_kprintf(" / | \\     %d.%d.%d build %s %s\n",
+    rt_kprintf_uart1("\n \\ | /\n");
+    rt_kprintf_uart1("- RT -     Thread Operating System\n");
+    rt_kprintf_uart1(" / | \\     %d.%d.%d build %s %s\n",
                RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__, __TIME__);
-    rt_kprintf(" 2006 - 2021 Copyright by rt-thread team\n");
+    rt_kprintf_uart1(" 2006 - 2021 Copyright by rt-thread team\n");
 }
 RTM_EXPORT(rt_show_version);
 
@@ -1189,7 +1189,7 @@ RTM_EXPORT(rt_console_get_device);
 
 /**
  * This function will set a device as console device.
- * After set a device to console, all output of rt_kprintf will be
+ * After set a device to console, all output of rt_kprintf_uart1 will be
  * redirected to this new device.
  *
  * @param  name is the name of new console device.
@@ -1563,7 +1563,7 @@ void rt_assert_handler(const char *ex_string, const char *func, rt_size_t line)
         else
 #endif /*RT_USING_MODULE*/
         {
-            rt_kprintf("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+            rt_kprintf_uart1("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
             while (dummy == 0);
         }
     }

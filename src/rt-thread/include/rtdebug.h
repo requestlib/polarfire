@@ -72,7 +72,7 @@
 do                                                                            \
 {                                                                             \
     if (type)                                                                 \
-        rt_kprintf message;                                                   \
+        rt_kprintf_uart1 message;                                                   \
 }                                                                             \
 while (0)
 
@@ -91,7 +91,7 @@ do                                                                            \
     level = rt_hw_interrupt_disable();                                        \
     if (rt_interrupt_get_nest() != 0)                                         \
     {                                                                         \
-        rt_kprintf("Function[%s] shall not be used in ISR\n", __FUNCTION__);  \
+        rt_kprintf_uart1("Function[%s] shall not be used in ISR\n", __FUNCTION__);  \
         RT_ASSERT(0)                                                          \
     }                                                                         \
     rt_hw_interrupt_enable(level);                                            \
@@ -109,7 +109,7 @@ do                                                                            \
     level = rt_hw_interrupt_disable();                                        \
     if (rt_thread_self() == RT_NULL)                                          \
     {                                                                         \
-        rt_kprintf("Function[%s] shall not be used before scheduler start\n", \
+        rt_kprintf_uart1("Function[%s] shall not be used before scheduler start\n", \
                    __FUNCTION__);                                             \
         RT_ASSERT(0)                                                          \
     }                                                                         \

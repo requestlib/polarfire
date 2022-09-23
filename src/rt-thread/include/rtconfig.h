@@ -57,8 +57,6 @@
 /* end of RT-Thread Kernel */
 #define ARCH_CPU_64BIT
 #define ARCH_RISCV
-#define ARCH_RISCV_FPU
-#define ARCH_RISCV_FPU_S
 #define ARCH_RISCV64
 
 /* RT-Thread Components */

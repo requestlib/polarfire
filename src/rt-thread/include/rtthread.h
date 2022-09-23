@@ -11,7 +11,7 @@
  * 2007-01-28     Bernard      rename RT_OBJECT_Class_Static to RT_Object_Class_Static
  * 2007-03-03     Bernard      clean up the definitions to rtdef.h
  * 2010-04-11     yi.qiu       add module feature
- * 2013-06-24     Bernard      add rt_kprintf re-define when not use RT_USING_CONSOLE.
+ * 2013-06-24     Bernard      add rt_kprintf_uart1 re-define when not use RT_USING_CONSOLE.
  * 2016-08-09     ArdaFu       add new thread and interrupt hook.
  * 2018-11-22     Jesven       add all cpu's lock and ipi handler
  * 2021-02-28     Meco Man     add RT_KSERVICE_USING_STDLIB
@@ -557,7 +557,7 @@ float get_cpu_usage(int core_id); /*get cpu usage*/
 #endif
 
 #ifndef RT_USING_CONSOLE
-#define rt_kprintf(...)
+#define rt_kprintf_uart1(...)
 #define rt_kputs(str)
 #else
 void rt_kprintf_uart1(const char *fmt, ...);

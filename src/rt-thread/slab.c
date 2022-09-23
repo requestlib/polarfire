@@ -364,7 +364,7 @@ void rt_system_heap_init(void *begin_addr, void *end_addr)
 
     if (heap_start >= heap_end)
     {
-        rt_kprintf("rt_system_heap_init, wrong address[0x%x - 0x%x]\n",
+        rt_kprintf_uart1("rt_system_heap_init, wrong address[0x%x - 0x%x]\n",
                    (rt_ubase_t)begin_addr, (rt_ubase_t)end_addr);
 
         return;
@@ -464,7 +464,7 @@ rt_inline int zoneindex(rt_size_t *bytes)
         return (n / 1024 + 55);
     }
 
-    rt_kprintf("Unexpected byte count %d", n);
+    rt_kprintf_uart1("Unexpected byte count %d", n);
 
     return 0;
 }
@@ -562,7 +562,7 @@ void *rt_malloc(rt_size_t size)
          * No chunks are available but nfree said we had some memory, so
          * it must be available in the never-before-used-memory area
          * governed by uindex.  The consequences are very serious if our zone
-         * got corrupted so we use an explicit rt_kprintf rather then a KASSERT.
+         * got corrupted so we use an explicit rt_kprintf_uart1 rather then a KASSERT.
          */
         if (z->z_uindex + 1 != z->z_nmax)
         {
@@ -948,9 +948,9 @@ void rt_memory_info(rt_uint32_t *total,
 
 void list_mem(void)
 {
-    rt_kprintf("total memory: %d\n", heap_end - heap_start);
-    rt_kprintf("used memory : %d\n", used_mem);
-    rt_kprintf("maximum allocated memory: %d\n", max_mem);
+    rt_kprintf_uart1("total memory: %d\n", heap_end - heap_start);
+    rt_kprintf_uart1("used memory : %d\n", used_mem);
+    rt_kprintf_uart1("maximum allocated memory: %d\n", max_mem);
 }
 FINSH_FUNCTION_EXPORT(list_mem, list memory usage information)
 #endif /* RT_USING_FINSH */

@@ -93,17 +93,17 @@ extern "C" {
  * WHITE    37
  */
 #ifdef DBG_COLOR
-#define _DBG_COLOR(n)        rt_kprintf("\033["#n"m")
+#define _DBG_COLOR(n)        rt_kprintf_uart1("\033["#n"m")
 #define _DBG_LOG_HDR(lvl_name, color_n)                    \
-    rt_kprintf("\033["#color_n"m[" lvl_name "/" DBG_SECTION_NAME "] ")
+    rt_kprintf_uart1("\033["#color_n"m[" lvl_name "/" DBG_SECTION_NAME "] ")
 #define _DBG_LOG_X_END                                     \
-    rt_kprintf("\033[0m\n")
+    rt_kprintf_uart1("\033[0m\n")
 #else
 #define _DBG_COLOR(n)
 #define _DBG_LOG_HDR(lvl_name, color_n)                    \
-    rt_kprintf("[" lvl_name "/" DBG_SECTION_NAME "] ")
+    rt_kprintf_uart1("[" lvl_name "/" DBG_SECTION_NAME "] ")
 #define _DBG_LOG_X_END                                     \
-    rt_kprintf("\n")
+    rt_kprintf_uart1("\n")
 #endif /* DBG_COLOR */
 
 /*
@@ -122,13 +122,13 @@ extern "C" {
             case DBG_LOG:     _DBG_LOG_HDR("D", 0); break;  \
             default: break;                                 \
         }                                                   \
-        rt_kprintf(fmt, ##__VA_ARGS__);                     \
+        rt_kprintf_uart1(fmt, ##__VA_ARGS__);                     \
         _DBG_COLOR(0);                                      \
     }
 
 #define dbg_here                                            \
     if ((DBG_LEVEL) <= DBG_LOG){                            \
-        rt_kprintf(DBG_SECTION_NAME " Here %s:%d\n",        \
+        rt_kprintf_uart1(DBG_SECTION_NAME " Here %s:%d\n",        \
             __FUNCTION__, __LINE__);                        \
     }
 
@@ -136,12 +136,12 @@ extern "C" {
     do                                                      \
     {                                                       \
         _DBG_LOG_HDR(lvl, color_n);                         \
-        rt_kprintf(fmt, ##__VA_ARGS__);                     \
+        rt_kprintf_uart1(fmt, ##__VA_ARGS__);                     \
         _DBG_LOG_X_END;                                     \
     }                                                       \
     while (0)
 
-#define dbg_raw(...)         rt_kprintf(__VA_ARGS__);
+#define dbg_raw(...)         rt_kprintf_uart1(__VA_ARGS__);
 
 #else
 #define dbg_log(level, fmt, ...)

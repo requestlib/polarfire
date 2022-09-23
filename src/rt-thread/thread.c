@@ -965,9 +965,9 @@ rt_uint32_t get_thread_distribute_cpu(rt_thread_t dst_thread)
         all_cpus |= (1<<i);
     }
 
-    rt_kprintf("free:%d\n",free_cpus);
-    rt_kprintf("low prio:%d\n",low_priority_cpus);
-    rt_kprintf("thread name:%s\n", dst_thread->name);
+    rt_kprintf_uart1("free:%d\n",free_cpus);
+    rt_kprintf_uart1("low prio:%d\n",low_priority_cpus);
+    rt_kprintf_uart1("thread name:%s\n", dst_thread->name);
     if(free_cpus)
         return get_lowest_usage_cpu(free_cpus);
     else if(low_priority_cpus)

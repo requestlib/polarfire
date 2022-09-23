@@ -738,7 +738,7 @@ static void _memheap_dump_tag(struct rt_memheap_item *item)
     ptr = (rt_uint8_t *) & (item->prev_free);
     rt_memcpy(&name[sizeof(void *)], ptr, sizeof(void *));
 
-    rt_kprintf("%.*s", 2 * sizeof(void *), name);
+    rt_kprintf_uart1("%.*s", 2 * sizeof(void *), name);
 }
 /**
  * @brief   This function will print the memheap infomation.
@@ -754,9 +754,9 @@ int rt_memheap_dump(struct rt_memheap *heap)
     if (heap == RT_NULL) return 0;
     RT_ASSERT(rt_object_get_type(&heap->parent) == RT_Object_Class_MemHeap);
 
-    rt_kprintf("\n[%.*s] [0x%08x - 0x%08x]->\n", RT_NAME_MAX, heap->parent.name,
+    rt_kprintf_uart1("\n[%.*s] [0x%08x - 0x%08x]->\n", RT_NAME_MAX, heap->parent.name,
                (rt_ubase_t)heap->start_addr, (rt_ubase_t)heap->start_addr + heap->pool_size);
-    rt_kprintf("------------------------------\n");
+    rt_kprintf_uart1("------------------------------\n");
 
     /* lock memheap */
     rt_sem_take(&(heap->lock), RT_WAITING_FOREVER);
@@ -768,17 +768,17 @@ int rt_memheap_dump(struct rt_memheap *heap)
     while ((rt_ubase_t)item < ((rt_ubase_t)end))
     {
         if (RT_MEMHEAP_IS_USED(item) && ((item->magic & RT_MEMHEAP_MASK) != RT_MEMHEAP_MAGIC))
-            rt_kprintf("0x%08x", item + 1);
+            rt_kprintf_uart1("0x%08x", item + 1);
 
         if (item->magic == (RT_MEMHEAP_MAGIC | RT_MEMHEAP_USED))
         {
-            rt_kprintf("0x%08x: %-8d ",     item + 1, MEMITEM_SIZE(item));
+            rt_kprintf_uart1("0x%08x: %-8d ",     item + 1, MEMITEM_SIZE(item));
             _memheap_dump_tag(item);
-            rt_kprintf("\n");
+            rt_kprintf_uart1("\n");
         }
         else
         {
-            rt_kprintf("0x%08x: %-8d <F>\n", item + 1, MEMITEM_SIZE(item));
+            rt_kprintf_uart1("0x%08x: %-8d <F>\n", item + 1, MEMITEM_SIZE(item));
         }
 
         item = item->next;
@@ -805,7 +805,7 @@ int memheaptrace(void)
 #if defined(RT_USING_FINSH) && defined(MSH_USING_BUILT_IN_COMMANDS)
         list_memheap();
 #endif
-        rt_kprintf("memheap header size: %d\n", RT_MEMHEAP_SIZE);
+        rt_kprintf_uart1("memheap header size: %d\n", RT_MEMHEAP_SIZE);
         count = rt_object_get_pointers(RT_Object_Class_MemHeap, (rt_object_t *)heaps, count);
         for (index = 0; index < count; index++)
         {
@@ -1067,20 +1067,20 @@ void dump_used_memheap(struct rt_memheap *mh)
     struct rt_memheap_item *header_ptr;
     rt_uint32_t block_size;
 
-    rt_kprintf("\nmemory heap address:\n");
-    rt_kprintf("heap_ptr: 0x%08x\n", mh->start_addr);
-    rt_kprintf("free    : 0x%08x\n", mh->available_size);
-    rt_kprintf("max_used: 0x%08x\n", mh->max_used_size);
-    rt_kprintf("size    : 0x%08x\n", mh->pool_size);
+    rt_kprintf_uart1("\nmemory heap address:\n");
+    rt_kprintf_uart1("heap_ptr: 0x%08x\n", mh->start_addr);
+    rt_kprintf_uart1("free    : 0x%08x\n", mh->available_size);
+    rt_kprintf_uart1("max_used: 0x%08x\n", mh->max_used_size);
+    rt_kprintf_uart1("size    : 0x%08x\n", mh->pool_size);
 
-    rt_kprintf("\n--memory used information --\n");
+    rt_kprintf_uart1("\n--memory used information --\n");
 
     header_ptr = mh->block_list;
     while (header_ptr->next != mh->block_list)
     {
         if ((header_ptr->magic & RT_MEMHEAP_MASK) != RT_MEMHEAP_MAGIC)
         {
-            rt_kprintf("[0x%08x - incorrect magic: 0x%08x\n", header_ptr, header_ptr->magic);
+            rt_kprintf_uart1("[0x%08x - incorrect magic: 0x%08x\n", header_ptr, header_ptr->magic);
             break;
         }
 
@@ -1092,14 +1092,14 @@ void dump_used_memheap(struct rt_memheap *mh)
         if (RT_MEMHEAP_IS_USED(header_ptr))
         {
             /* dump information */
-            rt_kprintf("[0x%08x - %d - %c%c%c%c] used\n", header_ptr, block_size,
+            rt_kprintf_uart1("[0x%08x - %d - %c%c%c%c] used\n", header_ptr, block_size,
                        header_ptr->owner_thread_name[0], header_ptr->owner_thread_name[1],
                        header_ptr->owner_thread_name[2], header_ptr->owner_thread_name[3]);
         }
         else
         {
             /* dump information */
-            rt_kprintf("[0x%08x - %d - %c%c%c%c] free\n", header_ptr, block_size,
+            rt_kprintf_uart1("[0x%08x - %d - %c%c%c%c] free\n", header_ptr, block_size,
                        header_ptr->owner_thread_name[0], header_ptr->owner_thread_name[1],
                        header_ptr->owner_thread_name[2], header_ptr->owner_thread_name[3]);
         }

@@ -103,14 +103,14 @@ void rt_tick_increase(void)
         thread->stat |= RT_THREAD_STAT_YIELD;
 
         rt_hw_interrupt_enable(level);
-        // rt_schedule();
+        rt_schedule();
     }
     else
     {
         rt_hw_interrupt_enable(level);
     }
     /* check timer */
-    // rt_timer_check();
+    rt_timer_check();
 }
 
 /**

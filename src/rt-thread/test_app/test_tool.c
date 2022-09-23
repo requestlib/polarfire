@@ -36,11 +36,11 @@ long list_thread(void)
 
     int level = rt_spin_lock(&_cpus_lock);
 #ifdef RT_USING_SMP
-    rt_kprintf("%-*.s cpu bind pri  status      sp     stack size max used left tick  error\n", RT_NAME_MAX, item_title);
-    rt_kprintf(" ---  ---- ---  ------- ---------- ----------  ------  ---------- ---\n");
+    rt_kprintf_uart1("%-*.s cpu bind pri  status      sp     stack size max used left tick  error\n", RT_NAME_MAX, item_title);
+    rt_kprintf_uart1(" ---  ---- ---  ------- ---------- ----------  ------  ---------- ---\n");
 #else
-    rt_kprintf("%-*.s pri  status      sp     stack size max used left tick  error\n", RT_NAME_MAX, item_title);
-    rt_kprintf(" ---  ------- ---------- ----------  ------  ---------- ---\n");
+    rt_kprintf_uart1("%-*.s pri  status      sp     stack size max used left tick  error\n", RT_NAME_MAX, item_title);
+    rt_kprintf_uart1(" ---  ------- ---------- ----------  ------  ---------- ---\n");
 #endif /*RT_USING_SMP*/
 
     while (next_node != list_head)
@@ -62,24 +62,24 @@ long list_thread(void)
 
 #ifdef RT_USING_SMP
         if (thread->oncpu != RT_CPU_DETACHED)
-            rt_kprintf("%-*.*s %3d %3d %4d ", RT_NAME_MAX, RT_NAME_MAX, thread->name, thread->oncpu, thread->bind_cpu, thread->current_priority);
+            rt_kprintf_uart1("%-*.*s %3d %3d %4d ", RT_NAME_MAX, RT_NAME_MAX, thread->name, thread->oncpu, thread->bind_cpu, thread->current_priority);
         else
-            rt_kprintf("%-*.*s N/A %3d %4d ", RT_NAME_MAX, RT_NAME_MAX, thread->name, thread->bind_cpu, thread->current_priority);
+            rt_kprintf_uart1("%-*.*s N/A %3d %4d ", RT_NAME_MAX, RT_NAME_MAX, thread->name, thread->bind_cpu, thread->current_priority);
 
 #else
-        rt_kprintf("%-*.*s %3d ", RT_NAME_MAX, RT_NAME_MAX, thread->name, thread->current_priority);
+        rt_kprintf_uart1("%-*.*s %3d ", RT_NAME_MAX, RT_NAME_MAX, thread->name, thread->current_priority);
 #endif /*RT_USING_SMP*/
         stat = (thread->stat & RT_THREAD_STAT_MASK);
-        if (stat == RT_THREAD_READY)        rt_kprintf(" ready  ");
-        else if (stat == RT_THREAD_SUSPEND) rt_kprintf(" suspend");
-        else if (stat == RT_THREAD_INIT)    rt_kprintf(" init   ");
-        else if (stat == RT_THREAD_CLOSE)   rt_kprintf(" close  ");
-        else if (stat == RT_THREAD_RUNNING) rt_kprintf(" running");
+        if (stat == RT_THREAD_READY)        rt_kprintf_uart1(" ready  ");
+        else if (stat == RT_THREAD_SUSPEND) rt_kprintf_uart1(" suspend");
+        else if (stat == RT_THREAD_INIT)    rt_kprintf_uart1(" init   ");
+        else if (stat == RT_THREAD_CLOSE)   rt_kprintf_uart1(" close  ");
+        else if (stat == RT_THREAD_RUNNING) rt_kprintf_uart1(" running");
 
         ptr = (rt_uint8_t *)thread->stack_addr;
         while (*ptr == '#')ptr ++;
 
-        rt_kprintf(" 0x%08x 0x%08x    %02d%%   0x%08x %03d\n",
+        rt_kprintf_uart1(" 0x%08x 0x%08x    %02d%%   0x%08x %03d\n",
                     thread->stack_size + ((rt_ubase_t)thread->stack_addr - (rt_ubase_t)thread->sp),
                     thread->stack_size,
                     (thread->stack_size - ((rt_ubase_t) ptr - (rt_ubase_t) thread->stack_addr)) * 100
