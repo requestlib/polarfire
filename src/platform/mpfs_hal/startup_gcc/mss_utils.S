@@ -69,6 +69,23 @@ pdma_transfer_complete:
     sw zero, 0(t0)
     ret
 
+/*
+ * rt_base_t rt_hw_local_irq_disable(void);
+ */
+    .globl rt_hw_local_irq_disable
+    .type  rt_hw_local_irq_disable, @function
+rt_hw_local_irq_disable:
+    csrrci a0, mstatus, 8
+    ret
+
+/*
+ * void rt_hw_local_irq_enable(rt_base_t level);
+ */
+    .globl rt_hw_local_irq_enable
+    .type  rt_hw_local_irq_enable, @function
+rt_hw_local_irq_enable:
+    csrw mstatus, a0
+    ret
 
  /***********************************************************************************
  *
@@ -184,5 +201,3 @@ config_64_copy:
     bnez    a2,1b
 2:
     ret
-
-
