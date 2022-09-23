@@ -31,30 +31,15 @@ void e51(void)
     volatile uint32_t icount = 0U;
     uint64_t hartid = read_csr(mhartid);
 
-    (void) mss_config_clk_rst(MSS_PERIPH_MMUART0, (uint8_t) 1, PERIPHERAL_ON);
+    // (void) mss_config_clk_rst(MSS_PERIPH_MMUART0, (uint8_t) 1, PERIPHERAL_ON);
 
-    MSS_UART_init(&g_mss_uart0_lo,
-    MSS_UART_115200_BAUD,
-    MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
+    // MSS_UART_init(&g_mss_uart0_lo,
+    // MSS_UART_115200_BAUD,
+    // MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
 
     /* Message on uart0 */
     MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3,
             sizeof(g_message3));
-
-#if (IMAGE_LOADED_BY_BOOTLOADER == 0)
-
-    /* Clear pending software interrupt in case there was any. */
-
-    clear_soft_interrupt();
-    set_csr(mie, MIP_MSIP);
-
-    /* Raise software interrupt to wake hart 1 */
-
-    raise_soft_interrupt(1U);
-
-    __enable_irq();
-
-#endif
 
     while (1U)
     {
@@ -62,7 +47,10 @@ void e51(void)
 
         if (0x100000U == icount)
         {
-            MSS_UART_polled_tx(&g_mss_uart0_lo, "hello\n",sizeof("hello\n"));
+            // rt_kprintf_uart1("hello_%d\n",-1);
+            // rt_kprintf_uart2("hello_2\n");
+            // rt_kprintf_uart3("hello_3\n");
+            // rt_kprintf_uart4("hello_4\n");
             icount=0;
         }
     }

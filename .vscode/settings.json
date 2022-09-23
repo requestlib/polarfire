@@ -5,6 +5,8 @@
         "system_startup_defs.h": "c",
         "stdbool.h": "c",
         "rtdef.h": "c",
-        "rtconfig.h": "c"
+        "rtconfig.h": "c",
+        "mss_uart.h": "c",
+        "stdio.h": "c"
     }
 }

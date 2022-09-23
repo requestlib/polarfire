@@ -12,6 +12,9 @@
 #include "mpfs_hal/mss_hal.h"
 #include "mpfs_hal/common/nwc/mss_nwc_init.h"
 #include "board.h"
+#include <stdio.h>
+#include <string.h>
+#include "drivers/mss/mss_mmuart/mss_uart.h"
 
 void rt_hw_board_init(HLS_DATA* hls){
     uint8_t hart_id;
@@ -110,7 +113,8 @@ void rt_hw_board_init(HLS_DATA* hls){
     (void)mss_config_clk_rst(MSS_PERIPH_FIC1, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
     (void)mss_config_clk_rst(MSS_PERIPH_FIC2, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
     (void)mss_config_clk_rst(MSS_PERIPH_FIC3, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
-
+    (void)rt_hw_uart_init(); //uart初始化
+    (void)rt_hw_tick_init(); //tick 初始化
     (void)rt_hw_board_init_other(hls);
 }
 
@@ -132,7 +136,7 @@ void rt_hw_board_init_other(HLS_DATA* hls){
     hls->shared_mem = (uint64_t *)app_hart_common_start;
     hls->shared_mem_marker = SHARED_MEM_INITALISED_MARKER;
     hls->shared_mem_status = SHARED_MEM_DEFAULT_STATUS;
-
+    (void)rt_hw_tick_init(); //tick 初始化
     volatile uint64_t dummy;
     switch(hls->my_hart_id)
     {
@@ -377,5 +381,19 @@ __attribute__((weak)) uint8_t mss_set_apb_bus_cr(uint32_t reg_value)
 __attribute__((weak)) uint8_t mss_get_apb_bus_cr(void)
 {
     return (SYSREG->APBBUS_CR);
+}
+
+void rt_hw_uart_init(void){
+
+    (void) mss_config_clk_rst(MSS_PERIPH_MMUART0, (uint8_t) 1, PERIPHERAL_ON);
+    (void) mss_config_clk_rst(MSS_PERIPH_MMUART2, (uint8_t) 1, PERIPHERAL_ON);
+    (void) mss_config_clk_rst(MSS_PERIPH_MMUART3, (uint8_t) 1, PERIPHERAL_ON);
+    (void) mss_config_clk_rst(MSS_PERIPH_MMUART1, (uint8_t) 1, PERIPHERAL_ON);
+    (void) mss_config_clk_rst(MSS_PERIPH_CFM, (uint8_t) 1, PERIPHERAL_ON);
+
+    MSS_UART_init(&g_mss_uart0_lo,MSS_UART_115200_BAUD,MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
+    MSS_UART_init(&g_mss_uart1_lo,MSS_UART_115200_BAUD,MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
+    MSS_UART_init(&g_mss_uart2_lo,MSS_UART_115200_BAUD,MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
+    MSS_UART_init(&g_mss_uart3_lo,MSS_UART_115200_BAUD,MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
 }
 

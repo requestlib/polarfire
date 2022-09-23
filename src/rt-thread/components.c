@@ -193,9 +193,6 @@ void main_thread_entry(void *parameter)
     rt_components_init();
 #endif /* RT_USING_COMPONENTS_INIT */
 
-#ifdef RT_USING_SMP
-    rt_hw_secondary_cpu_up();
-#endif /* RT_USING_SMP */
     /* invoke system main function */
 #ifdef __ARMCC_VERSION
     {

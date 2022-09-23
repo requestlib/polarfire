@@ -25,7 +25,10 @@
 #ifdef RT_USING_MODULE
 #include <dlmodule.h>
 #endif /* RT_USING_MODULE */
-
+#include <stdio.h>
+#include <string.h>
+#include "mpfs_hal/mss_hal.h"
+#include "drivers/mss/mss_mmuart/mss_uart.h"
 /* use precision */
 #define RT_PRINTF_PRECISION
 
@@ -1224,9 +1227,26 @@ rt_device_t rt_console_set_device(const char *name)
 RTM_EXPORT(rt_console_set_device);
 #endif /* RT_USING_DEVICE */
 
-RT_WEAK void rt_hw_console_output(const char *str)
+RT_WEAK void rt_hw_console_output(const char *str, int uart_id)
 {
     /* empty console output */
+    switch (uart_id)
+    {
+        case 1:
+            MSS_UART_polled_tx(&g_mss_uart0_lo, str, sizeof(str));
+            break;
+        case 2:
+            MSS_UART_polled_tx(&g_mss_uart2_lo, str, sizeof(str));
+            break;
+        case 3:
+            MSS_UART_polled_tx(&g_mss_uart3_lo, str, sizeof(str));
+            break;
+        case 4:
+            MSS_UART_polled_tx(&g_mss_uart1_lo, str, sizeof(str));
+            break;
+        default:
+            break;
+    }
 }
 RTM_EXPORT(rt_hw_console_output);
 
@@ -1242,7 +1262,7 @@ void rt_kputs(const char *str)
 #ifdef RT_USING_DEVICE
     if (_console_device == RT_NULL)
     {
-        rt_hw_console_output(str);
+        rt_hw_console_output(str, 0);
     }
     else
     {
@@ -1250,7 +1270,7 @@ void rt_kputs(const char *str)
         return;
     }
 #else
-    rt_hw_console_output(str);
+    rt_hw_console_output(str,0);
 #endif /* RT_USING_DEVICE */
 }
 
@@ -1259,7 +1279,7 @@ void rt_kputs(const char *str)
  *
  * @param fmt is the format parameters.
  */
-RT_WEAK void rt_kprintf(const char *fmt, ...)
+RT_WEAK void rt_kprintf_uart1(const char *fmt, ...)
 {
     va_list args;
     rt_size_t length;
@@ -1277,20 +1297,115 @@ RT_WEAK void rt_kprintf(const char *fmt, ...)
 #ifdef RT_USING_DEVICE
     if (_console_device == RT_NULL)
     {
-        rt_hw_console_output(rt_log_buf);
+        rt_hw_console_output(rt_log_buf, 1);
     }
     else
     {
-        int level = rt_spin_lock(&_uart_lock);
-        rt_kputs(rt_log_buf);
-        rt_spin_unlock(&_uart_lock, level);
+        MSS_UART_polled_tx(&g_mss_uart0_lo, rt_log_buf, sizeof(rt_log_buf));
     }
 #else
-    rt_hw_console_output(rt_log_buf);
+    rt_hw_console_output(rt_log_buf,0);
 #endif /* RT_USING_DEVICE */
     va_end(args);
 }
-RTM_EXPORT(rt_kprintf);
+RTM_EXPORT(rt_kprintf_uart1);
+
+RT_WEAK void rt_kprintf_uart2(const char *fmt, ...)
+{
+    va_list args;
+    rt_size_t length;
+    static char rt_log_buf[RT_CONSOLEBUF_SIZE];
+
+    va_start(args, fmt);
+    /* the return value of vsnprintf is the number of bytes that would be
+     * written to buffer had if the size of the buffer been sufficiently
+     * large excluding the terminating null byte. If the output string
+     * would be larger than the rt_log_buf, we have to adjust the output
+     * length. */
+    length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
+    if (length > RT_CONSOLEBUF_SIZE - 1)
+        length = RT_CONSOLEBUF_SIZE - 1;
+#ifdef RT_USING_DEVICE
+    if (_console_device == RT_NULL)
+    {
+        rt_hw_console_output(rt_log_buf,2);
+    }
+    else
+    {
+        MSS_UART_polled_tx(&g_mss_uart2_lo, rt_log_buf,length);
+    }
+#else
+    rt_hw_console_output(rt_log_buf,0);
+#endif /* RT_USING_DEVICE */
+    va_end(args);
+}
+RTM_EXPORT(rt_kprintf_uart2);
+
+
+RT_WEAK void rt_kprintf_uart3(const char *fmt, ...)
+{
+    va_list args;
+    rt_size_t length;
+    static char rt_log_buf[RT_CONSOLEBUF_SIZE];
+
+    va_start(args, fmt);
+    /* the return value of vsnprintf is the number of bytes that would be
+     * written to buffer had if the size of the buffer been sufficiently
+     * large excluding the terminating null byte. If the output string
+     * would be larger than the rt_log_buf, we have to adjust the output
+     * length. */
+    length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
+    if (length > RT_CONSOLEBUF_SIZE - 1)
+        length = RT_CONSOLEBUF_SIZE - 1;
+#ifdef RT_USING_DEVICE
+    if (_console_device == RT_NULL)
+    {
+        rt_hw_console_output(rt_log_buf,3);
+    }
+    else
+    {
+        MSS_UART_polled_tx(&g_mss_uart3_lo, rt_log_buf,length);
+    }
+#else
+    rt_hw_console_output(rt_log_buf,0);
+#endif /* RT_USING_DEVICE */
+    va_end(args);
+}
+RTM_EXPORT(rt_kprintf_uart3);
+
+
+RT_WEAK void rt_kprintf_uart4(const char *fmt, ...)
+{
+    va_list args;
+    rt_size_t length;
+    static char rt_log_buf[RT_CONSOLEBUF_SIZE];
+
+    va_start(args, fmt);
+    /* the return value of vsnprintf is the number of bytes that would be
+     * written to buffer had if the size of the buffer been sufficiently
+     * large excluding the terminating null byte. If the output string
+     * would be larger than the rt_log_buf, we have to adjust the output
+     * length. */
+    length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
+    if (length > RT_CONSOLEBUF_SIZE - 1)
+        length = RT_CONSOLEBUF_SIZE - 1;
+#ifdef RT_USING_DEVICE
+    if (_console_device == RT_NULL)
+    {
+        rt_hw_console_output(rt_log_buf,4);
+    }
+    else
+    {
+        MSS_UART_polled_tx(&g_mss_uart1_lo, rt_log_buf,length);
+    }
+#else
+    rt_hw_console_output(rt_log_buf,0);
+#endif /* RT_USING_DEVICE */
+    va_end(args);
+}
+RTM_EXPORT(rt_kprintf_uart4);
+
+
 #endif /* RT_USING_CONSOLE */
 
 #ifdef RT_USING_HEAP

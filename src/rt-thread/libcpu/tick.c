@@ -10,35 +10,52 @@
 
 #include <rthw.h>
 #include <rtthread.h>
+#include <mpfs_hal/mss_hal.h>
 
 static volatile unsigned long tick_cycles = 0;
-// int tick_isr(void)
-// {
-//     uint64_t core_id = rt_hw_cpu_id();
+// void handle_m_timer_interrupt(void)
+static uint64_t g_systick_increment[5] = {0ULL,0ULL,0ULL,0ULL,0ULL};
 
-//     clint->mtimecmp[core_id] += tick_cycles;
-//     rt_tick_increase();
+int tick_isr(void)
+{
 
-//     return 0;
-// }
+    volatile uint64_t hart_id = read_csr(mhartid);
+    clear_csr(mie, MIP_MTIP);
+
+    CLINT->MTIMECMP[read_csr(mhartid)] = CLINT->MTIME + g_systick_increment[hart_id];
+    rt_tick_increase();
+    set_csr(mie, MIP_MTIP);
+
+}
 
 /* Sets and enable the timer interrupt */
-// int rt_hw_tick_init(void)
-// {
-//     /* Read core id */
-//     unsigned long core_id = rt_hw_cpu_id();
-//     unsigned long interval = 1000/RT_TICK_PER_SECOND;
+int rt_hw_tick_init(void)
+{
+    /* Read core id */
+    volatile rt_uint32_t ret_val = ERROR;
 
-//     /* Clear the Machine-Timer bit in MIE */
-//     clear_csr(mie, MIP_MTIP);
+    rt_uint64_t mhart_id = read_csr(mhartid);
 
-//     /* calculate the tick cycles */
-//     tick_cycles = interval * sysctl_clock_get_freq(SYSCTL_CLOCK_CPU) / CLINT_CLOCK_DIV / 1000ULL - 1;
-//     /* Set mtimecmp by core id */
-//     clint->mtimecmp[core_id] = clint->mtime + tick_cycles;
+    /*
+     * We are assuming the tick rate is in milli-seconds
+     *
+     * convert RTC frequency into milliseconds and multiple by the tick rate
+     *
+     */
 
-//     /* Enable the Machine-Timer bit in MIE */
-//     set_csr(mie, MIP_MTIP);
+    g_systick_increment[mhart_id] = LIBERO_SETTING_MSS_RTC_TOGGLE_CLK * RT_TICK_PER_SECOND;
 
-//     return 0;
-// }
+    if (g_systick_increment[mhart_id] > 0ULL)
+    {
+
+        CLINT->MTIMECMP[mhart_id] = CLINT->MTIME + g_systick_increment[mhart_id];
+
+        set_csr(mie, MIP_MTIP);   /* mie Register - Machine Timer Interrupt Enable */
+
+        __enable_irq();
+
+        ret_val = SUCCESS;
+    }
+
+    return (ret_val);
+}

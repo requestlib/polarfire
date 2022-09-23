@@ -115,6 +115,7 @@ extern unsigned long __uninit_top$;
  */
 void rt_hw_board_init(HLS_DATA* hls);
 void rt_hw_board_init_other(HLS_DATA* hls);
+void rt_hw_uart_init(void);
 void main_first_hart(HLS_DATA* hls);
 void e51(void);
 void u54_1(void);

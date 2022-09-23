@@ -560,7 +560,10 @@ float get_cpu_usage(int core_id); /*get cpu usage*/
 #define rt_kprintf(...)
 #define rt_kputs(str)
 #else
-void rt_kprintf(const char *fmt, ...);
+void rt_kprintf_uart1(const char *fmt, ...);
+void rt_kprintf_uart2(const char *fmt, ...);
+void rt_kprintf_uart3(const char *fmt, ...);
+void rt_kprintf_uart4(const char *fmt, ...);
 void rt_kputs(const char *str);
 #endif
 

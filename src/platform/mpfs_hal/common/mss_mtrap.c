@@ -744,7 +744,7 @@ void trap_from_machine_mode(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc)
     }
     else if (((mcause & MCAUSE_INT) == MCAUSE_INT) && ((mcause & MCAUSE_CAUSE)  == IRQ_M_TIMER))
     {
-        handle_m_timer_interrupt();
+        tick_isr();
     }
     else
     {
