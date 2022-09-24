@@ -95,8 +95,8 @@ rt_isr_handler_t rt_hw_interrupt_install(int              vector,
                                          const char      *name);
 
 #ifdef RT_USING_SMP
-rt_base_t rt_hw_local_irq_disable();
-void rt_hw_local_irq_enable(rt_base_t level);
+uint64_t rt_hw_local_irq_disable();
+void rt_hw_local_irq_enable(uint64_t level);
 
 #define rt_hw_interrupt_disable rt_cpus_lock
 #define rt_hw_interrupt_enable rt_cpus_unlock

@@ -582,11 +582,31 @@ char *strdup(const char *s) __attribute__((alias("rt_strdup")));
  */
 void rt_show_version(void)
 {
-    rt_kprintf_uart1("\n \\ | /\n");
-    rt_kprintf_uart1("- RT -     Thread Operating System\n");
-    rt_kprintf_uart1(" / | \\     %d.%d.%d build %s %s\n",
-               RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__, __TIME__);
-    rt_kprintf_uart1(" 2006 - 2021 Copyright by rt-thread team\n");
+    const uint8_t g_message3[] =
+                " \r\n\r\n------------------------------------\
+        ---------------------------------\r\n\r\n\
+        Please observe UART1, as application is using UART1 as \
+        User-Interface\r\n\r\n--------------------------------\
+        -------------------------------------\r\n";
+    int icount=0;
+    while(true){
+        // rt_kprintf_uart2("\n \\ | /\n");
+        // rt_kprintf_uart2("- RT -     Thread Operating System\n");
+        // rt_kprintf_uart2(" / | \\     %d.%d.%d build %s %s\n",
+        //         RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__, __TIME__);
+        // rt_kprintf_uart2(" 2006 - 2021 Copyright by rt-thread team\n");
+        icount++;
+        if (0x100000U == icount)
+        {
+            MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
+            // rt_kprintf_uart2("hello_2\n");
+            // rt_kprintf_uart3("hello_3\n");
+            // rt_kprintf_uart4("hello_4\n");
+            icount=0;
+        }
+        
+    }
+
 }
 RTM_EXPORT(rt_show_version);
 
@@ -1229,20 +1249,23 @@ RTM_EXPORT(rt_console_set_device);
 
 RT_WEAK void rt_hw_console_output(const char *str, int uart_id)
 {
-    /* empty console output */
+    int length = 1;
+	for(int i=0;*(str+i)!='\0';i++){
+		length++;
+	}
     switch (uart_id)
     {
         case 1:
-            MSS_UART_polled_tx(&g_mss_uart0_lo, str, sizeof(str));
+            MSS_UART_polled_tx(&g_mss_uart0_lo, str, length);
             break;
         case 2:
-            MSS_UART_polled_tx(&g_mss_uart2_lo, str, sizeof(str));
+            MSS_UART_polled_tx(&g_mss_uart2_lo, str, length);
             break;
         case 3:
-            MSS_UART_polled_tx(&g_mss_uart3_lo, str, sizeof(str));
+            MSS_UART_polled_tx(&g_mss_uart3_lo, str, length);
             break;
         case 4:
-            MSS_UART_polled_tx(&g_mss_uart1_lo, str, sizeof(str));
+            MSS_UART_polled_tx(&g_mss_uart1_lo, str, length);
             break;
         default:
             break;
@@ -1279,33 +1302,27 @@ void rt_kputs(const char *str)
  *
  * @param fmt is the format parameters.
  */
-RT_WEAK void rt_kprintf_uart1(const char *fmt, ...)
+RT_WEAK void rt_kprintf_uart1(const unsigned char *fmt,...)
 {
+    // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
     va_list args;
     rt_size_t length;
     static char rt_log_buf[RT_CONSOLEBUF_SIZE];
 
     va_start(args, fmt);
+
     /* the return value of vsnprintf is the number of bytes that would be
      * written to buffer had if the size of the buffer been sufficiently
      * large excluding the terminating null byte. If the output string
      * would be larger than the rt_log_buf, we have to adjust the output
      * length. */
+
     length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
     if (length > RT_CONSOLEBUF_SIZE - 1)
         length = RT_CONSOLEBUF_SIZE - 1;
-#ifdef RT_USING_DEVICE
-    if (_console_device == RT_NULL)
-    {
-        rt_hw_console_output(rt_log_buf, 1);
-    }
-    else
-    {
-        MSS_UART_polled_tx(&g_mss_uart0_lo, rt_log_buf, sizeof(rt_log_buf));
-    }
-#else
-    rt_hw_console_output(rt_log_buf,0);
-#endif /* RT_USING_DEVICE */
+    // spinlock(uartlock);
+    rt_hw_console_output(rt_log_buf, 1);
+    // spinunlock(uartlock);
     va_end(args);
 }
 RTM_EXPORT(rt_kprintf_uart1);
@@ -1325,18 +1342,7 @@ RT_WEAK void rt_kprintf_uart2(const char *fmt, ...)
     length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
     if (length > RT_CONSOLEBUF_SIZE - 1)
         length = RT_CONSOLEBUF_SIZE - 1;
-#ifdef RT_USING_DEVICE
-    if (_console_device == RT_NULL)
-    {
-        rt_hw_console_output(rt_log_buf,2);
-    }
-    else
-    {
-        MSS_UART_polled_tx(&g_mss_uart2_lo, rt_log_buf,length);
-    }
-#else
-    rt_hw_console_output(rt_log_buf,0);
-#endif /* RT_USING_DEVICE */
+    rt_hw_console_output(rt_log_buf, 2);
     va_end(args);
 }
 RTM_EXPORT(rt_kprintf_uart2);
@@ -1357,18 +1363,7 @@ RT_WEAK void rt_kprintf_uart3(const char *fmt, ...)
     length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
     if (length > RT_CONSOLEBUF_SIZE - 1)
         length = RT_CONSOLEBUF_SIZE - 1;
-#ifdef RT_USING_DEVICE
-    if (_console_device == RT_NULL)
-    {
-        rt_hw_console_output(rt_log_buf,3);
-    }
-    else
-    {
-        MSS_UART_polled_tx(&g_mss_uart3_lo, rt_log_buf,length);
-    }
-#else
-    rt_hw_console_output(rt_log_buf,0);
-#endif /* RT_USING_DEVICE */
+    rt_hw_console_output(rt_log_buf, 3);
     va_end(args);
 }
 RTM_EXPORT(rt_kprintf_uart3);
@@ -1389,18 +1384,7 @@ RT_WEAK void rt_kprintf_uart4(const char *fmt, ...)
     length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
     if (length > RT_CONSOLEBUF_SIZE - 1)
         length = RT_CONSOLEBUF_SIZE - 1;
-#ifdef RT_USING_DEVICE
-    if (_console_device == RT_NULL)
-    {
-        rt_hw_console_output(rt_log_buf,4);
-    }
-    else
-    {
-        MSS_UART_polled_tx(&g_mss_uart1_lo, rt_log_buf,length);
-    }
-#else
-    rt_hw_console_output(rt_log_buf,0);
-#endif /* RT_USING_DEVICE */
+    rt_hw_console_output(rt_log_buf, 4);
     va_end(args);
 }
 RTM_EXPORT(rt_kprintf_uart4);

@@ -26,6 +26,7 @@
 #include <rtservice.h>
 #include <rtm.h>
 #include <board.h>
+#include "mpfs_hal/common/mss_util.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -433,7 +434,11 @@ void rt_spin_unlock_irqrestore(rt_spinlock *lock, int level);
 
 extern rt_spinlock _cpus_lock;
 extern rt_spinlock _uart_lock;
+extern volatile long uartlock;
 extern rt_spinlock _rt_critical_lock;
+
+#define rt_hw_local_irq_disable disable_interrupts
+#define rt_hw_local_irq_enable restore_interrupts
 
 void rt_spin_lock_init(rt_spinlock *lock);
 int rt_spin_lock(rt_spinlock *lock);
@@ -560,7 +565,7 @@ float get_cpu_usage(int core_id); /*get cpu usage*/
 #define rt_kprintf_uart1(...)
 #define rt_kputs(str)
 #else
-void rt_kprintf_uart1(const char *fmt, ...);
+void rt_kprintf_uart1(const unsigned char *fmt, ...);
 void rt_kprintf_uart2(const char *fmt, ...);
 void rt_kprintf_uart3(const char *fmt, ...);
 void rt_kprintf_uart4(const char *fmt, ...);

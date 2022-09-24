@@ -14,6 +14,7 @@
 static struct rt_cpu _cpus[RT_CPUS_NR];
 rt_spinlock _cpus_lock;
 rt_spinlock _uart_lock;
+volatile long uartlock;
 
 #ifdef RT_CALCULATE_CPU_USAGE
 /*get cpu usage*/
@@ -96,8 +97,8 @@ void rt_spin_lock_init(rt_spinlock *lock)
  */
 int rt_spin_lock(rt_spinlock *lock)
 {
-    if(lock->owner != rt_thread_self())
-        exclusive_read_write(&(lock->lock), 1);
+    // if(lock->owner != rt_thread_self())
+    exclusive_read_write(&(lock->lock), 1);
     int level = rt_hw_local_irq_disable();
     lock->owner = rt_thread_self();
     return level;

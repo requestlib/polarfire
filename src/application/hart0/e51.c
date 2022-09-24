@@ -11,6 +11,7 @@
 #include <string.h>
 #include "mpfs_hal/mss_hal.h"
 #include "drivers/mss/mss_mmuart/mss_uart.h"
+#include <rtthread.h>
 volatile uint32_t count_sw_ints_h0 = 0U;
 
 /* Main function for the hart0(e51 processor).
@@ -31,26 +32,18 @@ void e51(void)
     volatile uint32_t icount = 0U;
     uint64_t hartid = read_csr(mhartid);
 
-    // (void) mss_config_clk_rst(MSS_PERIPH_MMUART0, (uint8_t) 1, PERIPHERAL_ON);
-
-    // MSS_UART_init(&g_mss_uart0_lo,
-    // MSS_UART_115200_BAUD,
-    // MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
-
-    /* Message on uart0 */
-    MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3,
-            sizeof(g_message3));
 
     while (1U)
     {
         icount++;
 
-        if (0x100000U == icount)
+        if (0x500000U == icount)
         {
-            // rt_kprintf_uart1("hello_%d\n",-1);
-            // rt_kprintf_uart2("hello_2\n");
-            // rt_kprintf_uart3("hello_3\n");
-            // rt_kprintf_uart4("hello_4\n");
+            /* Message on uart0 */
+            rt_kprintf_uart1("content%d:\n%s",1,g_message3);
+            // MSS_UART_polled_tx(&g_mss_uart0_lo, fmt, sizeof(fmt));
+            // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
+            // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3,sizeof(g_message3));
             icount=0;
         }
     }

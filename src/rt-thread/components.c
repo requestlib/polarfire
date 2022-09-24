@@ -160,7 +160,12 @@ int __low_level_init(void)
 /* Add -eentry to arm-none-eabi-gcc argument */
 int primary_cpu_entry(HLS_DATA* hls)
 {
+    int level = rt_hw_local_irq_disable();
     rt_hw_board_init(hls);
+    /* show RT-Thread version */
+    // rt_show_version();
+    rt_kprintf_uart2("irqunlock!!\n");
+    rt_hw_local_irq_enable(level);
     rtthread_startup();
     return 0;
 }
@@ -238,14 +243,10 @@ void rt_application_init(void)
  */
 int rtthread_startup(void)
 {
-    // rt_hw_interrupt_disable();
 
     /* board level initialization
      * NOTE: please initialize heap inside board initialization.
      */
-
-    /* show RT-Thread version */
-    // rt_show_version();
 
     /* timer system initialization */
     // rt_system_timer_init();

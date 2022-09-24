@@ -9,8 +9,9 @@
  * 2018/12/27     Jesven       Change irq enable/disable to cpu0
  */
 
-// #include <rthw.h>
-// #include "tick.h"
+#include <rthw.h>
+#include "tick.h"
+#include <mpfs_hal/common/mss_util.h>
 
 // #define CPU_NUM         2
 // #define MAX_HANDLERS    IRQN_MAX

@@ -598,7 +598,6 @@ void rt_timer_check(void)
 
     /* disable interrupt */
     level = rt_hw_interrupt_disable();
-
     while (!rt_list_isempty(&_timer_list[RT_TIMER_SKIP_LIST_LEVEL - 1]))
     {
         t = rt_list_entry(_timer_list[RT_TIMER_SKIP_LIST_LEVEL - 1].next,

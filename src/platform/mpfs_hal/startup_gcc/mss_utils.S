@@ -75,24 +75,6 @@ pdma_transfer_complete:
  */
 
 /*
- * rt_base_t rt_hw_local_irq_disable(void);
- */
-    .globl rt_hw_local_irq_disable
-    .type  rt_hw_local_irq_disable, @function
-rt_hw_local_irq_disable:
-    csrrci a0, mstatus, 8
-    ret
-
-/*
- * void rt_hw_local_irq_enable(rt_base_t level);
- */
-    .globl rt_hw_local_irq_enable
-    .type  rt_hw_local_irq_enable, @function
-rt_hw_local_irq_enable:
-    csrw mstatus, a0
-    ret
-
-/*
  * int exclusive_read_write(int* lock, int new_num);
  */
     .global exclusive_read_write

@@ -68,7 +68,7 @@ uint32_t SysTick_Config(void)
 
         set_csr(mie, MIP_MTIP);   /* mie Register - Machine Timer Interrupt Enable */
 
-        __enable_irq();
+        // __enable_irq();
 
         ret_val = SUCCESS;
     }

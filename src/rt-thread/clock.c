@@ -96,7 +96,7 @@ void rt_tick_increase(void)
 
 
     -- thread->remaining_tick;
-    if (thread->remaining_tick == 0)
+    if (thread!=RT_NULL && thread->remaining_tick == 0)
     {
         /* change to initialized tick */
         thread->remaining_tick = thread->init_tick;
@@ -109,6 +109,7 @@ void rt_tick_increase(void)
     {
         rt_hw_interrupt_enable(level);
     }
+    rt_kprintf_uart1("timer check now!\n");
     /* check timer */
     rt_timer_check();
 }
