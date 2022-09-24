@@ -109,7 +109,6 @@ void rt_tick_increase(void)
     {
         rt_hw_interrupt_enable(level);
     }
-    rt_kprintf_uart1("timer check now!\n");
     /* check timer */
     rt_timer_check();
 }

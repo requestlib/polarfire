@@ -20,6 +20,8 @@
 #include <rthw.h>
 #include <rtthread.h>
 #include <mpfs_hal/common/encoding.h>
+#include "mpfs_hal/mss_hal.h"
+#include "mpfs_hal/common/nwc/mss_nwc_init.h"
 
 #ifdef RT_USING_USER_MAIN
 #ifndef RT_MAIN_THREAD_STACK_SIZE
@@ -136,6 +138,7 @@ void rt_components_init(void)
 void rt_application_init(void);
 //void rt_hw_board_init(HLS_DATA* hls);
 int rtthread_startup(void);
+static bool main_hart_done = false;
 
 #ifdef __ARMCC_VERSION
 extern int $Super$$main(void);
@@ -162,17 +165,22 @@ int primary_cpu_entry(HLS_DATA* hls)
 {
     int level = rt_hw_local_irq_disable();
     rt_hw_board_init(hls);
-    /* show RT-Thread version */
-    // rt_show_version();
-    rt_kprintf_uart2("irqunlock!!\n");
+    rt_show_version();
+    rt_system_timer_init();
+    rt_system_scheduler_init();
+    rt_application_init();
     rt_hw_local_irq_enable(level);
-    rtthread_startup();
+     main_hart_done = true;
+    while(1);
     return 0;
 }
 int other_cpu_entry(HLS_DATA* hls)
 {
+    while(1) if(main_hart_done)break;
     rt_hw_board_init_other(hls);
-    rtthread_startup();
+    //list_thread();
+    rt_system_scheduler_start();
+    while(1);
     return 0;
 }
 #endif
@@ -191,7 +199,12 @@ struct rt_thread main_thread;
  */
 void main_thread_entry(void *parameter)
 {
-    extern int main(void);
+    extern void e51(void);
+    extern void u54_1(void);
+    extern void u54_2(void);
+    extern void u54_3(void);
+    extern void u54_4(void);
+    int hart_id = rt_hw_cpu_id();
 
 #ifdef RT_USING_COMPONENTS_INIT
     /* RT-Thread components initialization */
@@ -205,7 +218,31 @@ void main_thread_entry(void *parameter)
         $Super$$main(); /* for ARMCC. */
     }
 #elif defined(__ICCARM__) || defined(__GNUC__) || defined(__TASKING__)
-    main();
+    volatile uint64_t dummy;
+    switch(hart_id)
+    {
+        case 0U:
+            e51();
+            break;
+        case 1U:
+            (void)init_pmp((uint8_t)1);
+            u54_1();
+            break;
+        case 2U:
+            (void)init_pmp((uint8_t)2);
+            u54_2();
+            break;
+        case 3U:
+            (void)init_pmp((uint8_t)3);
+            u54_3();
+            break;
+        case 4U:
+            (void)init_pmp((uint8_t)4);
+            u54_4();
+            break;
+        default:
+            break;
+    }
 #endif
 }
 
@@ -215,26 +252,38 @@ void main_thread_entry(void *parameter)
  */
 void rt_application_init(void)
 {
-    rt_thread_t tid;
-
-#ifdef RT_USING_HEAP
-    tid = rt_thread_create("main", main_thread_entry, RT_NULL,
+    rt_thread_t tid1;
+    rt_thread_t tid2;
+    rt_thread_t tid3;
+    rt_thread_t tid4;
+    //core1 main
+    tid1 = rt_thread_create("main", main_thread_entry, RT_NULL,
                            RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
-    RT_ASSERT(tid != RT_NULL);
-    tid->bind_cpu = rt_hw_cpu_id();
-#else
-    rt_err_t result;
+    RT_ASSERT(tid1 != RT_NULL);
+    tid1->bind_cpu = 1;
+    rt_thread_startup(tid1);
+    
+    //core2 main
+    tid2 = rt_thread_create("main", main_thread_entry, RT_NULL,
+                           RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
+    RT_ASSERT(tid2 != RT_NULL);
+    tid2->bind_cpu = 2;
+    rt_thread_startup(tid2);
 
-    tid = &main_thread;
-    result = rt_thread_init(tid, "main", main_thread_entry, RT_NULL,
-                            main_stack, sizeof(main_stack), RT_MAIN_THREAD_PRIORITY, 20);
-    RT_ASSERT(result == RT_EOK);
+    //core3 main
+    tid3 = rt_thread_create("main", main_thread_entry, RT_NULL,
+                           RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
+    RT_ASSERT(tid3 != RT_NULL);
+    tid3->bind_cpu = 3;
+    rt_thread_startup(tid3);
 
-    /* if not define RT_USING_HEAP, using to eliminate the warning */
-    (void)result;
-#endif /* RT_USING_HEAP */
-
-    rt_thread_startup(tid);
+    //core4 main
+    tid4 = rt_thread_create("main", main_thread_entry, RT_NULL,
+                           RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
+    RT_ASSERT(tid4 != RT_NULL);
+    tid4->bind_cpu = 4;
+    rt_thread_startup(tid4);
+    
 }
 
 /**
@@ -247,26 +296,29 @@ int rtthread_startup(void)
     /* board level initialization
      * NOTE: please initialize heap inside board initialization.
      */
-
-    /* timer system initialization */
-    // rt_system_timer_init();
-
-    /* scheduler system initialization */
-    // rt_system_scheduler_init();
-
     /* create init_thread */
-    // rt_application_init();
-
-    /* timer thread initialization */
-    // rt_system_timer_thread_init();
-
-    /* idle thread initialization */
-    // rt_thread_idle_init();
+    rt_application_init();
 
     /* start scheduler */
-    // rt_system_scheduler_start();
+    rt_system_scheduler_start();
 
     /* never reach here */
+    int icount=0;
+    while (1)
+    {
+        icount++;
+
+        if (0x500000U == icount)
+        {
+            /* Message on uart0 */
+            rt_kprintf_uart1("\ncontent%d:\n%s",1,"looping");
+            // MSS_UART_polled_tx(&g_mss_uart0_lo, fmt, sizeof(fmt));
+            // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
+            // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3,sizeof(g_message3));
+            icount=0;
+        }
+    }
+    
     return 0;
 }
 #endif /* RT_USING_USER_MAIN */

@@ -40,7 +40,7 @@ void e51(void)
         if (0x500000U == icount)
         {
             /* Message on uart0 */
-            rt_kprintf_uart1("content%d:\n%s",1,g_message3);
+            rt_kprintf_uart1("\ne51 print:%d:\n%s",1,g_message3);
             // MSS_UART_polled_tx(&g_mss_uart0_lo, fmt, sizeof(fmt));
             // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
             // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3,sizeof(g_message3));

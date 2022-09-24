@@ -34,7 +34,7 @@ long list_thread(void)
     list_head = &info->object_list;
     next_node = list_head->next;
 
-    int level = rt_spin_lock(&_cpus_lock);
+    // int level = rt_spin_lock(&_cpus_lock);
 #ifdef RT_USING_SMP
     rt_kprintf_uart1("%-*.s cpu bind pri  status      sp     stack size max used left tick  error\n", RT_NAME_MAX, item_title);
     rt_kprintf_uart1(" ---  ---- ---  ------- ---------- ----------  ------  ---------- ---\n");
@@ -89,6 +89,6 @@ long list_thread(void)
 
         next_node = next_node->next;
     }
-    rt_spin_unlock(&_cpus_lock, level);
+    // rt_spin_unlock(&_cpus_lock, level);
     return 0;
 }

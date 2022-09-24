@@ -22,6 +22,28 @@ int tick_isr(void)
     volatile uint64_t hart_id = read_csr(mhartid);
     clear_csr(mie, MIP_MTIP);
     CLINT->MTIMECMP[read_csr(mhartid)] = CLINT->MTIME + g_systick_increment[hart_id];
+    switch (hart_id)
+    {
+    case 0:
+        rt_kprintf_uart1("current1 tick:%d\n",rt_cpu_self()->tick);
+        break;
+    case 1:
+        rt_kprintf_uart1("current1 tick:%d\n",rt_cpu_self()->tick);
+        break;
+    case 2:
+        rt_kprintf_uart2("current2 tick:%d\n",rt_cpu_self()->tick);
+        break;
+    case 3:
+        rt_kprintf_uart3("current3 tick:%d\n",rt_cpu_self()->tick);
+        break;
+    case 4:
+        rt_kprintf_uart4("current4 tick:%d\n",rt_cpu_self()->tick);
+        break;
+    
+    default:
+        break;
+    }
+    
     rt_tick_increase();
     set_csr(mie, MIP_MTIP);
 
@@ -48,11 +70,8 @@ int rt_hw_tick_init(void)
     {
 
         CLINT->MTIMECMP[mhart_id] = CLINT->MTIME + g_systick_increment[mhart_id];
-
+        
         set_csr(mie, MIP_MTIP);   /* mie Register - Machine Timer Interrupt Enable */
-
-        // __enable_irq();
-
         ret_val = SUCCESS;
     }
 

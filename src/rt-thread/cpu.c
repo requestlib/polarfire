@@ -18,11 +18,17 @@ volatile long uartlock;
 
 #ifdef RT_CALCULATE_CPU_USAGE
 /*get cpu usage*/
-float get_cpu_usage(int core_id){
+float get_cpu_usage_float(int core_id){
     rt_tick_t total = rt_cpu_index(core_id)->recent_total_ticks;
     rt_tick_t work = rt_cpu_index(core_id)->recent_total_ticks - rt_cpu_index(core_id)->idle_ticks;
     if(total == 0) return 0.0;
     return 100.0 * work / total;
+}
+int get_cpu_usage_int(int core_id){
+    rt_tick_t total = rt_cpu_index(core_id)->recent_total_ticks;
+    rt_tick_t work = rt_cpu_index(core_id)->recent_total_ticks - rt_cpu_index(core_id)->idle_ticks;
+    if(total == 0) return 0;
+    return 100 * work / total;
 }
 
 #endif

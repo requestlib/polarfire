@@ -114,12 +114,14 @@ void rt_hw_board_init(HLS_DATA* hls){
     (void)mss_config_clk_rst(MSS_PERIPH_FIC2, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
     (void)mss_config_clk_rst(MSS_PERIPH_FIC3, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
     (void)rt_hw_uart_init(); //uart初始化
-    (void)rt_hw_tick_init(); //tick 初始化
+    // rt_kprintf_uart1("heap: [0x1000000000 - 0x107fffffff] (2GB)\n");
+    (void)rt_system_heap_init((rt_ubase_t) RT_HW_HEAP_BEGIN, (rt_ubase_t)init_ddr());
     (void)rt_hw_board_init_other(hls);
 }
 
 
 void rt_hw_board_init_other(HLS_DATA* hls){
+    (void)rt_hw_tick_init(); //tick 初始化
     extern char __app_stack_top_h0;
     extern char __app_stack_top_h1;
     extern char __app_stack_top_h2;
@@ -136,37 +138,36 @@ void rt_hw_board_init_other(HLS_DATA* hls){
     hls->shared_mem = (uint64_t *)app_hart_common_start;
     hls->shared_mem_marker = SHARED_MEM_INITALISED_MARKER;
     hls->shared_mem_status = SHARED_MEM_DEFAULT_STATUS;
-    (void)rt_hw_tick_init(); //tick 初始化
-    volatile uint64_t dummy;
-    switch(hls->my_hart_id)
-    {
-        case 0U:
-            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h0));
-            e51();
-            break;
-        case 1U:
-            (void)init_pmp((uint8_t)1);
-            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h1));
-            u54_1();
-            break;
-        case 2U:
-            (void)init_pmp((uint8_t)2);
-            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h2));
-            u54_2();
-            break;
-        case 3U:
-            (void)init_pmp((uint8_t)3);
-            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h3));
-            u54_3();
-            break;
-        case 4U:
-            (void)init_pmp((uint8_t)4);
-            __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h4));
-            u54_4();
-            break;
-        default:
-            break;
-    }
+    // volatile uint64_t dummy;
+    // switch(hls->my_hart_id)
+    // {
+    //     case 0U:
+    //         __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h0));
+    //         e51();
+    //         break;
+    //     case 1U:
+    //         (void)init_pmp((uint8_t)1);
+    //         __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h1));
+    //         u54_1();
+    //         break;
+    //     case 2U:
+    //         (void)init_pmp((uint8_t)2);
+    //         __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h2));
+    //         u54_2();
+    //         break;
+    //     case 3U:
+    //         (void)init_pmp((uint8_t)3);
+    //         __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h3));
+    //         u54_3();
+    //         break;
+    //     case 4U:
+    //         (void)init_pmp((uint8_t)4);
+    //         __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h4));
+    //         u54_4();
+    //         break;
+    //     default:
+    //         break;
+    // }
 }
 
 
@@ -298,7 +299,7 @@ __attribute__((weak)) void u54_4(void)
    * _start() function called invoked
    * This function is called on power up and warm reset.
    */
-  __attribute__((weak)) void init_ddr(void)
+  __attribute__((weak)) rt_base_t init_ddr(void)
   {
     if ((LIBERO_SETTING_DDRPHY_MODE & DDRPHY_MODE_MASK) != DDR_OFF_MODE) {
 #ifdef DDR_SUPPORT
@@ -312,7 +313,9 @@ __attribute__((weak)) void u54_4(void)
         end_address = LIBERO_SETTING_DDR_64_CACHE + LIBERO_SETTING_CFG_AXI_END_ADDRESS_AXI1_0 + LIBERO_SETTING_CFG_AXI_END_ADDRESS_AXI1_1;
         zero_section((uint64_t *)LIBERO_SETTING_DDR_64_CACHE, (uint64_t *)end_address);
 #endif
+        return end_address;
     }
+    return 0;
   }
 
  /**

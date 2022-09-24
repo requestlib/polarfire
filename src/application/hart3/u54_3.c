@@ -22,30 +22,7 @@ volatile uint32_t count_sw_ints_h3 = 0U;
  */
 void u54_3(void)
 {
-    uint64_t hartid = read_csr(mhartid);
-    volatile uint32_t icount = 0U;
-
-    /* Clear pending software interrupt in case there was any.
-       Enable only the software interrupt so that the E51 core can bring this
-       core out of WFI by raising a software interrupt. */
-
-    clear_soft_interrupt();
-    set_csr(mie, MIP_MSIP);
-
-    /* Put this hart in WFI. */
-    do
-    {
-        __asm("wfi");
-    }while(0 == (read_csr(mip) & MIP_MSIP));
-
-    /* The hart is now out of WFI, clear the SW interrupt. Here onwards the
-     * application can enable and use any interrupts as required */
-
-    clear_soft_interrupt();
-
-    __enable_irq();
-
-
+    int icount=0;
     while(1U)
     {
         icount++;
@@ -59,9 +36,3 @@ void u54_3(void)
   /* Never return */
 }
 
-/* hart3 software interrupt handler */
-void Software_h3_IRQHandler(void)
-{
-    uint64_t hart_id = read_csr(mhartid);
-    count_sw_ints_h3++;
-}

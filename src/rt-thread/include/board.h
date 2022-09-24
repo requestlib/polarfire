@@ -18,7 +18,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 typedef enum WFI_SM_
 {
     INIT_THREAD_PR                      = 0x00,         /*!< 0 init pointer   */
@@ -110,6 +109,8 @@ extern unsigned long __uninit_bottom$;
 extern unsigned long __uninit_top$;
 #endif
 
+// (uint64_t *)LIBERO_SETTING_DDR_64_CACHE, (uint64_t *)end_address
+#define RT_HW_HEAP_BEGIN    (void*)LIBERO_SETTING_DDR_64_CACHE
 /*
  * Function Declarations
  */
@@ -123,7 +124,7 @@ void u54_2(void);
 void u54_3(void);
 void u54_4(void);
 void init_memory( void);
-void init_ddr( void);
+rt_base_t init_ddr( void);
 rt_uint8_t init_mem_protection_unit(void);
 rt_uint8_t init_pmp(rt_uint8_t hart_id);
 rt_uint8_t init_bus_error_unit( void);

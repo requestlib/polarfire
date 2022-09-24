@@ -7,7 +7,7 @@
 
 #define RT_NAME_MAX 8
 #define RT_USING_SMP
-#define RT_CPUS_NR 2
+#define RT_CPUS_NR 5
 #define RT_ALIGN_SIZE 8
 #define RT_THREAD_PRIORITY_32
 #define RT_THREAD_PRIORITY_MAX 32
@@ -57,6 +57,8 @@
 /* end of RT-Thread Kernel */
 #define ARCH_CPU_64BIT
 #define ARCH_RISCV
+#define ARCH_RISCV_FPU
+#define ARCH_RISCV_FPU_S
 #define ARCH_RISCV64
 
 /* RT-Thread Components */

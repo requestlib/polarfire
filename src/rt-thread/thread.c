@@ -435,6 +435,7 @@ rt_thread_t rt_thread_create(const char *name,
                              rt_uint8_t  priority,
                              rt_uint32_t tick)
 {
+    
     struct rt_thread *thread;
     void *stack_start;
 
@@ -451,7 +452,6 @@ rt_thread_t rt_thread_create(const char *name,
 
         return RT_NULL;
     }
-
     _thread_init(thread,
                     name,
                     entry,
@@ -965,30 +965,43 @@ rt_uint32_t get_thread_distribute_cpu(rt_thread_t dst_thread)
         all_cpus |= (1<<i);
     }
 
-    rt_kprintf_uart1("free:%d\n",free_cpus);
-    rt_kprintf_uart1("low prio:%d\n",low_priority_cpus);
-    rt_kprintf_uart1("thread name:%s\n", dst_thread->name);
+
     if(free_cpus)
         return get_lowest_usage_cpu(free_cpus);
-    else if(low_priority_cpus)
+    if(low_priority_cpus)
         return get_lowest_usage_cpu(low_priority_cpus);
-    else
+    if(all_cpus)
         return get_lowest_usage_cpu(all_cpus);
 }
 
 // 从候选池中选出利用率最低的CPU
 rt_uint32_t get_lowest_usage_cpu(rt_uint32_t candidate_cpus){
     rt_uint32_t dst_cpuid=0;
-    float min_usage=RT_UINT8_MAX;
-    for(int i=0;i<RT_CPUS_NR;i++){
-        if(candidate_cpus&(1<<i)){
-            float cur_cpu_usage = get_cpu_usage(i);
-            if(cur_cpu_usage<min_usage){
-                min_usage = cur_cpu_usage;
-                dst_cpuid = i;
+    if(rt_hw_cpu_id()==0){
+        int min_usage=100;
+        for(int i=0;i<RT_CPUS_NR;i++){
+            if(candidate_cpus&(1<<i)){
+                int cur_cpu_usage = get_cpu_usage_int(i);
+                if(cur_cpu_usage<min_usage){
+                    min_usage = cur_cpu_usage;
+                    dst_cpuid = i;
+                }
             }
         }
     }
+    else{
+        float min_usage=100.0;
+        for(int i=0;i<RT_CPUS_NR;i++){
+            if(candidate_cpus&(1<<i)){
+                float cur_cpu_usage = get_cpu_usage_float(i);
+                if(cur_cpu_usage<min_usage){
+                    min_usage = cur_cpu_usage;
+                    dst_cpuid = i;
+                }
+            }
+        }
+    }
+
     return dst_cpuid;
 }
 

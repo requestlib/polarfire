@@ -558,7 +558,8 @@ void rt_components_board_init(void);
  * general kernel service
  */
 #ifdef RT_CALCULATE_CPU_USAGE
-float get_cpu_usage(int core_id); /*get cpu usage*/
+float get_cpu_usage_float(int core_id); /*get cpu usage*/
+int get_cpu_usage_int(int core_id); /*get cpu usage*/
 #endif
 
 #ifndef RT_USING_CONSOLE

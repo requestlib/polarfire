@@ -70,111 +70,30 @@ void uart1_rx_handler(mss_uart_instance_t *this_uart) {
  * In the respective U54 harts, local interrupts of the corresponding MMUART
  * are enabled. e.g. in U54_1.c local interrupt of MMUART1 is enabled. */
 
+const uint8_t g_message34[] =
+        " \r\n\r\n------------------------------------\
+---------------------------------\r\n\r\n\
+ Please observe UART1, as application is using UART1 as \
+ User-Interface\r\n\r\n--------------------------------\
+-------------------------------------\r\n";
+
 void u54_1(void) {
-    uint64_t mcycle_start = 0U;
-    uint64_t mcycle_end = 0U;
-    uint64_t delta_mcycle = 0U;
+       volatile uint32_t icount = 0U;
     uint64_t hartid = read_csr(mhartid);
 
 
-    clear_soft_interrupt();
-    set_csr(mie, MIP_MSIP);
-
-#if (IMAGE_LOADED_BY_BOOTLOADER == 0)
-
-    /* Put this hart in WFI. */
-    do
+    while (1U)
     {
-        __asm("wfi");
-    }while(0 == (read_csr(mip) & MIP_MSIP));
+        icount++;
 
-    /* The hart is now out of WFI, clear the SW interrupt. Here onwards the
-     * application can enable and use any interrupts as required */
-
-    clear_soft_interrupt();
-
-#endif
-
-    __enable_irq();
-
-    /* Bring all the MMUARTs out of Reset */
-    // (void) mss_config_clk_rst(MSS_PERIPH_MMUART1, (uint8_t) 1, PERIPHERAL_ON);
-    // (void) mss_config_clk_rst(MSS_PERIPH_MMUART2, (uint8_t) 1, PERIPHERAL_ON);
-    // (void) mss_config_clk_rst(MSS_PERIPH_MMUART3, (uint8_t) 1, PERIPHERAL_ON);
-    // (void) mss_config_clk_rst(MSS_PERIPH_MMUART4, (uint8_t) 1, PERIPHERAL_ON);
-    // (void) mss_config_clk_rst(MSS_PERIPH_CFM, (uint8_t) 1, PERIPHERAL_ON);
-
-    /* All clocks ON */
-
-    MSS_UART_init(&g_mss_uart1_lo,
-    MSS_UART_115200_BAUD,
-    MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
-    MSS_UART_set_rx_handler(&g_mss_uart1_lo, uart1_rx_handler,
-            MSS_UART_FIFO_SINGLE_BYTE);
-
-    MSS_UART_enable_local_irq(&g_mss_uart1_lo);
-
-    /* Demonstrating polled MMUART transmission */
-    MSS_UART_polled_tx(&g_mss_uart1_lo,g_message1,
-            sizeof(g_message1));
-
-    /* Demonstrating interrupt method of transmission */
-    MSS_UART_irq_tx(&g_mss_uart1_lo, g_message2,
-            sizeof(g_message2));
-
-    /* Makes sure that the previous interrupt based transmission is completed
-     * Alternatively, you could register TX complete handler using
-     * MSS_UART_set_tx_handler() */
-    while (0u == MSS_UART_tx_complete(&g_mss_uart1_lo)) {
-        ;
-    }
-
-    mcycle_start = readmcycle();
-    while (1u) {
-        if (g_rx_size > 0u) {
-            switch (g_rx_buff[0u]) {
-
-            case '0':
-                mcycle_end = readmcycle();
-                delta_mcycle = mcycle_end - mcycle_start;
-                sprintf(info_string, "hart %ld, %ld delta_mcycle \r\n", hartid,
-                        delta_mcycle);
-                MSS_UART_polled_tx(&g_mss_uart1_lo, info_string,
-                        strlen(info_string));
-                break;
-            case '1':
-                /* show menu */
-                MSS_UART_irq_tx(&g_mss_uart1_lo, g_message2,
-                        sizeof(g_message2));
-                break;
-            case '2':
-
-                /* polled method of transmission */
-                MSS_UART_polled_tx(&g_mss_uart1_lo, polled_message,
-                        sizeof(polled_message));
-
-                break;
-            case '3':
-
-                /* interrupt method of transmission */
-                MSS_UART_irq_tx(&g_mss_uart1_lo, intr_message,
-                        sizeof(intr_message));
-                break;
-
-            default:
-                MSS_UART_polled_tx(&g_mss_uart1_lo, g_rx_buff,
-                        g_rx_size);
-                break;
-            }
-
-            g_rx_size = 0u;
+        if (0x500000U == icount)
+        {
+            /* Message on uart0 */
+            rt_kprintf_uart1("\nu54_1 print:%d:\n%s",1,g_message34);
+            // MSS_UART_polled_tx(&g_mss_uart0_lo, fmt, sizeof(fmt));
+            // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
+            // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3,sizeof(g_message3));
+            icount=0;
         }
     }
-}
-
-/* hart1 Software interrupt handler */
-
-void Software_h1_IRQHandler(void) {
-    uint64_t hart_id = read_csr(mhartid);
-    count_sw_ints_h1++;
 }

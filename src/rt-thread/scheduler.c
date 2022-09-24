@@ -141,16 +141,6 @@ static struct rt_thread* _scheduler_get_highest_priority_thread(rt_ubase_t *high
     local_highest_ready_priority = __rt_ffs(pcpu->priority_group) - 1;
 #endif /* RT_THREAD_PRIORITY_MAX > 32 */
 
-    /* get highest ready priority thread */
-    // if (highest_ready_priority < local_highest_ready_priority)
-    // {
-    //     *highest_prio = highest_ready_priority;
-    //     highest_priority_thread = rt_list_entry(rt_thread_priority_table[highest_ready_priority].next,
-    //                               struct rt_thread,
-    //                               tlist);
-    // }
-    // else
-    // {
     *highest_prio = local_highest_ready_priority;
     highest_priority_thread = rt_list_entry(pcpu->priority_table[local_highest_ready_priority].next,
                               struct rt_thread,
@@ -759,23 +749,7 @@ void rt_schedule_remove_thread(struct rt_thread *thread)
 
     /* remove thread from ready list */
     rt_list_remove(&(thread->tlist));
-//     if (thread->bind_cpu == RT_CPUS_NR)
-//     {
-//         if (rt_list_isempty(&(rt_thread_priority_table[thread->current_priority])))
-//         {
-// #if RT_THREAD_PRIORITY_MAX > 32
-//             rt_thread_ready_table[thread->number] &= ~thread->high_mask;
-//             if (rt_thread_ready_table[thread->number] == 0)
-//             {
-//                 rt_thread_ready_priority_group &= ~thread->number_mask;
-//             }
-// #else
-//             rt_thread_ready_priority_group &= ~thread->number_mask;
-// #endif /* RT_THREAD_PRIORITY_MAX > 32 */
-//         }
-//     }
-//     else
-//     {
+
     struct rt_cpu *pcpu = rt_cpu_index(thread->bind_cpu);
 
     if (rt_list_isempty(&(pcpu->priority_table[thread->current_priority])))

@@ -582,31 +582,11 @@ char *strdup(const char *s) __attribute__((alias("rt_strdup")));
  */
 void rt_show_version(void)
 {
-    const uint8_t g_message3[] =
-                " \r\n\r\n------------------------------------\
-        ---------------------------------\r\n\r\n\
-        Please observe UART1, as application is using UART1 as \
-        User-Interface\r\n\r\n--------------------------------\
-        -------------------------------------\r\n";
-    int icount=0;
-    while(true){
-        // rt_kprintf_uart2("\n \\ | /\n");
-        // rt_kprintf_uart2("- RT -     Thread Operating System\n");
-        // rt_kprintf_uart2(" / | \\     %d.%d.%d build %s %s\n",
-        //         RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__, __TIME__);
-        // rt_kprintf_uart2(" 2006 - 2021 Copyright by rt-thread team\n");
-        icount++;
-        if (0x100000U == icount)
-        {
-            MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
-            // rt_kprintf_uart2("hello_2\n");
-            // rt_kprintf_uart3("hello_3\n");
-            // rt_kprintf_uart4("hello_4\n");
-            icount=0;
-        }
-        
-    }
-
+    rt_kprintf_uart1("\n \\ | /\n");
+    rt_kprintf_uart1("- RT -     Thread Operating System\n");
+    rt_kprintf_uart1("/ | \\     %d.%d.%d build %s %s\n",
+            RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__, __TIME__);
+    rt_kprintf_uart1("2006 - 2021 Copyright by rt-thread team\n");
 }
 RTM_EXPORT(rt_show_version);
 
@@ -1547,7 +1527,24 @@ void rt_assert_handler(const char *ex_string, const char *func, rt_size_t line)
         else
 #endif /*RT_USING_MODULE*/
         {
-            rt_kprintf_uart1("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+            switch(rt_hw_cpu_id()){
+                case 0:
+                    rt_kprintf_uart4("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    break;
+                case 1:
+                    rt_kprintf_uart1("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    break;
+                case 2:
+                    rt_kprintf_uart2("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    break;
+                case 3:
+                    rt_kprintf_uart3("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    break;
+                case 4:
+                    rt_kprintf_uart4("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    break;
+            }
+            
             while (dummy == 0);
         }
     }
