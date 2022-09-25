@@ -81,9 +81,9 @@ pdma_transfer_complete:
     .type  exclusive_read_write, @function
 exclusive_read_write:
 retry:
-    lr.w a3, (a0)
+    lr.d a3, (a0)
     bnez a3, retry
-    sc.w a3, a1, (a0)
+    sc.d a3, a1, (a0)
     bnez a3, retry
 
 /*

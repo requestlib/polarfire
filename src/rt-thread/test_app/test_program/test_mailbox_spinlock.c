@@ -43,7 +43,7 @@ static void thread1_entry(void *parameter)
 
     }
     int end = read_cycle();
-    rt_kprintf_uart1("mailbox:%d\n",end-start);
+    rt_kprintf("mailbox:%d\n",end-start);
     rt_mb_detach(&mb1);
 }
 
@@ -60,7 +60,7 @@ static void thread2_entry(void *parameter)
         number++;
     }
     int end = read_cycle();
-    rt_kprintf_uart1("sem:%d\n",end-start);
+    rt_kprintf("sem:%d\n",end-start);
     while(1);
 }
 
@@ -82,7 +82,7 @@ static void thread4_entry(void *parameter)
 int test_spinlock_mail(void)
 {
     int core = rt_hw_cpu_id();
-    rt_kprintf_uart1("Core %d Hello world \n", core);
+    rt_kprintf("Core %d Hello world \n", core);
     if(core==1){
         rt_err_t result = rt_mb_init(&mb1,"mbt1",&mb_pool1[0],sizeof(mb_pool1) / 4, RT_IPC_FLAG_FIFO);   //初始化邮箱1 
 

@@ -18,32 +18,9 @@ static uint64_t g_systick_increment[5] = {0ULL,0ULL,0ULL,0ULL,0ULL};
 
 int tick_isr(void)
 {
-
-    volatile uint64_t hart_id = read_csr(mhartid);
+    uint64_t hart_id = read_csr(mhartid);
     clear_csr(mie, MIP_MTIP);
-    CLINT->MTIMECMP[read_csr(mhartid)] = CLINT->MTIME + g_systick_increment[hart_id];
-    switch (hart_id)
-    {
-    case 0:
-        rt_kprintf_uart1("current1 tick:%d\n",rt_cpu_self()->tick);
-        break;
-    case 1:
-        rt_kprintf_uart1("current1 tick:%d\n",rt_cpu_self()->tick);
-        break;
-    case 2:
-        rt_kprintf_uart2("current2 tick:%d\n",rt_cpu_self()->tick);
-        break;
-    case 3:
-        rt_kprintf_uart3("current3 tick:%d\n",rt_cpu_self()->tick);
-        break;
-    case 4:
-        rt_kprintf_uart4("current4 tick:%d\n",rt_cpu_self()->tick);
-        break;
-    
-    default:
-        break;
-    }
-    
+    CLINT->MTIMECMP[hart_id] = CLINT->MTIME + g_systick_increment[hart_id];
     rt_tick_increase();
     set_csr(mie, MIP_MTIP);
 
@@ -64,7 +41,7 @@ int rt_hw_tick_init(void)
      *
      */
 
-    g_systick_increment[mhart_id] = LIBERO_SETTING_MSS_RTC_TOGGLE_CLK * RT_TICK_PER_SECOND;
+    g_systick_increment[mhart_id] = LIBERO_SETTING_MSS_RTC_TOGGLE_CLK / RT_TICK_PER_SECOND;
 
     if (g_systick_increment[mhart_id] > 0ULL)
     {

@@ -11,28 +11,28 @@ struct ipi_irq ipi;
 
 static void ipi_function(void *parameter)
 {
-    rt_kprintf_uart1("run ipi function!\n");
+    rt_kprintf("run ipi function!\n");
 }
 
 static void thread1_entry(void *parameter)
 {
-    rt_kprintf_uart1("thread1 entry run!\n");
+    rt_kprintf("thread1 entry run!\n");
     while (1);
     
 }
 
 static void thread2_entry(void *parameter)
 {
-    rt_kprintf_uart1("thread2 entry start!\n");
+    rt_kprintf("thread2 entry start!\n");
     rt_thread_delay(1000);
-    rt_kprintf_uart1("thread2 entry run again!\n");
+    rt_kprintf("thread2 entry run again!\n");
 }
 
 
 int test_ipi(void)
 {
     int core = rt_hw_cpu_id();
-    rt_kprintf_uart1("Core %d Hello world \n", core);
+    rt_kprintf("Core %d Hello world \n", core);
 
     if(core==0){
         rt_thread_delay(2000);

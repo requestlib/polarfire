@@ -13,9 +13,9 @@
  * 2010-04-15     Bernard      remove weak definition on ICCM16C compiler
  * 2012-07-18     Arda         add the alignment display for signed integer
  * 2012-11-23     Bernard      fix IAR compiler error.
- * 2012-12-22     Bernard      fix rt_kprintf_uart1 issue, which found by Grissiom.
- * 2013-06-24     Bernard      remove rt_kprintf_uart1 if RT_USING_CONSOLE is not defined.
- * 2013-09-24     aozima       make sure the device is in STREAM mode when used by rt_kprintf_uart1.
+ * 2012-12-22     Bernard      fix rt_kprintf issue, which found by Grissiom.
+ * 2013-06-24     Bernard      remove rt_kprintf if RT_USING_CONSOLE is not defined.
+ * 2013-09-24     aozima       make sure the device is in STREAM mode when used by rt_kprintf.
  * 2015-07-06     Bernard      Add rt_assert_handler routine.
  * 2021-02-28     Meco Man     add RT_KSERVICE_USING_STDLIB
  */
@@ -582,11 +582,11 @@ char *strdup(const char *s) __attribute__((alias("rt_strdup")));
  */
 void rt_show_version(void)
 {
-    rt_kprintf_uart1("\n \\ | /\n");
-    rt_kprintf_uart1("- RT -     Thread Operating System\n");
-    rt_kprintf_uart1("/ | \\     %d.%d.%d build %s %s\n",
+    rt_kprintf("\n \\ | /\n");
+    rt_kprintf("- RT -     Thread Operating System\n");
+    rt_kprintf("/ | \\     %d.%d.%d build %s %s\n",
             RT_VERSION, RT_SUBVERSION, RT_REVISION, __DATE__, __TIME__);
-    rt_kprintf_uart1("2006 - 2021 Copyright by rt-thread team\n");
+    rt_kprintf("2006 - 2021 Copyright by rt-thread team\n");
 }
 RTM_EXPORT(rt_show_version);
 
@@ -1189,7 +1189,7 @@ RTM_EXPORT(rt_console_get_device);
 
 /**
  * This function will set a device as console device.
- * After set a device to console, all output of rt_kprintf_uart1 will be
+ * After set a device to console, all output of rt_kprintf will be
  * redirected to this new device.
  *
  * @param  name is the name of new console device.
@@ -1227,28 +1227,34 @@ rt_device_t rt_console_set_device(const char *name)
 RTM_EXPORT(rt_console_set_device);
 #endif /* RT_USING_DEVICE */
 
-RT_WEAK void rt_hw_console_output(const char *str, int uart_id)
+RT_WEAK void rt_hw_console_output(const char *str)
 {
     int length = 1;
 	for(int i=0;*(str+i)!='\0';i++){
 		length++;
 	}
-    switch (uart_id)
+    uint64_t hart_id = read_csr(mhartid);
+    // uint64_t hart_id = 1;
+    switch (hart_id)
     {
-        case 1:
-            MSS_UART_polled_tx(&g_mss_uart0_lo, str, length);
-            break;
-        case 2:
-            MSS_UART_polled_tx(&g_mss_uart2_lo, str, length);
-            break;
-        case 3:
-            MSS_UART_polled_tx(&g_mss_uart3_lo, str, length);
-            break;
-        case 4:
-            MSS_UART_polled_tx(&g_mss_uart1_lo, str, length);
-            break;
-        default:
-            break;
+    case 0:
+        MSS_UART_polled_tx(&g_mss_uart0_lo, str, length);
+        break;
+    case 1:
+        MSS_UART_polled_tx(&g_mss_uart0_lo, str, length);
+        break;
+    case 2:
+        MSS_UART_polled_tx(&g_mss_uart2_lo, str, length);
+        break;
+    case 3:
+        MSS_UART_polled_tx(&g_mss_uart3_lo, str, length);
+        break;
+    case 4:
+        MSS_UART_polled_tx(&g_mss_uart1_lo, str, length);
+        break;
+    
+    default:
+        break;
     }
 }
 RTM_EXPORT(rt_hw_console_output);
@@ -1265,7 +1271,7 @@ void rt_kputs(const char *str)
 #ifdef RT_USING_DEVICE
     if (_console_device == RT_NULL)
     {
-        rt_hw_console_output(str, 0);
+        rt_hw_console_output(str);
     }
     else
     {
@@ -1273,7 +1279,7 @@ void rt_kputs(const char *str)
         return;
     }
 #else
-    rt_hw_console_output(str,0);
+    rt_hw_console_output(str);
 #endif /* RT_USING_DEVICE */
 }
 
@@ -1282,12 +1288,12 @@ void rt_kputs(const char *str)
  *
  * @param fmt is the format parameters.
  */
-RT_WEAK void rt_kprintf_uart1(const unsigned char *fmt,...)
+RT_WEAK void rt_kprintf(const unsigned char *fmt,...)
 {
     // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
     va_list args;
     rt_size_t length;
-    static char rt_log_buf[RT_CONSOLEBUF_SIZE];
+    char rt_log_buf[RT_CONSOLEBUF_SIZE];
 
     va_start(args, fmt);
 
@@ -1300,75 +1306,12 @@ RT_WEAK void rt_kprintf_uart1(const unsigned char *fmt,...)
     length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
     if (length > RT_CONSOLEBUF_SIZE - 1)
         length = RT_CONSOLEBUF_SIZE - 1;
-    // spinlock(uartlock);
-    rt_hw_console_output(rt_log_buf, 1);
-    // spinunlock(uartlock);
+    int level = rt_spin_lock(&_uart_lock);
+    rt_hw_console_output(rt_log_buf);
+    rt_spin_unlock(&_uart_lock, level);
     va_end(args);
 }
-RTM_EXPORT(rt_kprintf_uart1);
-
-RT_WEAK void rt_kprintf_uart2(const char *fmt, ...)
-{
-    va_list args;
-    rt_size_t length;
-    static char rt_log_buf[RT_CONSOLEBUF_SIZE];
-
-    va_start(args, fmt);
-    /* the return value of vsnprintf is the number of bytes that would be
-     * written to buffer had if the size of the buffer been sufficiently
-     * large excluding the terminating null byte. If the output string
-     * would be larger than the rt_log_buf, we have to adjust the output
-     * length. */
-    length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
-    if (length > RT_CONSOLEBUF_SIZE - 1)
-        length = RT_CONSOLEBUF_SIZE - 1;
-    rt_hw_console_output(rt_log_buf, 2);
-    va_end(args);
-}
-RTM_EXPORT(rt_kprintf_uart2);
-
-
-RT_WEAK void rt_kprintf_uart3(const char *fmt, ...)
-{
-    va_list args;
-    rt_size_t length;
-    static char rt_log_buf[RT_CONSOLEBUF_SIZE];
-
-    va_start(args, fmt);
-    /* the return value of vsnprintf is the number of bytes that would be
-     * written to buffer had if the size of the buffer been sufficiently
-     * large excluding the terminating null byte. If the output string
-     * would be larger than the rt_log_buf, we have to adjust the output
-     * length. */
-    length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
-    if (length > RT_CONSOLEBUF_SIZE - 1)
-        length = RT_CONSOLEBUF_SIZE - 1;
-    rt_hw_console_output(rt_log_buf, 3);
-    va_end(args);
-}
-RTM_EXPORT(rt_kprintf_uart3);
-
-
-RT_WEAK void rt_kprintf_uart4(const char *fmt, ...)
-{
-    va_list args;
-    rt_size_t length;
-    static char rt_log_buf[RT_CONSOLEBUF_SIZE];
-
-    va_start(args, fmt);
-    /* the return value of vsnprintf is the number of bytes that would be
-     * written to buffer had if the size of the buffer been sufficiently
-     * large excluding the terminating null byte. If the output string
-     * would be larger than the rt_log_buf, we have to adjust the output
-     * length. */
-    length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
-    if (length > RT_CONSOLEBUF_SIZE - 1)
-        length = RT_CONSOLEBUF_SIZE - 1;
-    rt_hw_console_output(rt_log_buf, 4);
-    va_end(args);
-}
-RTM_EXPORT(rt_kprintf_uart4);
-
+RTM_EXPORT(rt_kprintf);
 
 #endif /* RT_USING_CONSOLE */
 
@@ -1529,19 +1472,19 @@ void rt_assert_handler(const char *ex_string, const char *func, rt_size_t line)
         {
             switch(rt_hw_cpu_id()){
                 case 0:
-                    rt_kprintf_uart4("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    rt_kprintf("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
                     break;
                 case 1:
-                    rt_kprintf_uart1("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    rt_kprintf("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
                     break;
                 case 2:
-                    rt_kprintf_uart2("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    rt_kprintf("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
                     break;
                 case 3:
-                    rt_kprintf_uart3("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    rt_kprintf("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
                     break;
                 case 4:
-                    rt_kprintf_uart4("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
+                    rt_kprintf("(%s) assertion failed at function:%s, line number:%d \n", ex_string, func, line);
                     break;
             }
             

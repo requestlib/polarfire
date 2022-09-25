@@ -42,7 +42,9 @@ uint64_t disable_interrupts(void) {
  *
  */
 void restore_interrupts(uint64_t saved_psr) {
-    set_csr(mstatus, MSTATUS_MIE);
+    write_csr(mstatus, saved_psr);
+    // set_csr(mstatus, MSTATUS_MIE);
+    // set_csr(mstatus, MSTATUS_MPIE);
 }
 
 /*------------------------------------------------------------------------------
@@ -51,6 +53,7 @@ void restore_interrupts(uint64_t saved_psr) {
 void __disable_irq(void)
 {
     clear_csr(mstatus, MSTATUS_MIE);
+    clear_csr(mstatus, MSTATUS_MPIE);
 }
 
 void __disable_all_irqs(void)

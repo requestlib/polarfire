@@ -114,7 +114,7 @@ void rt_hw_board_init(HLS_DATA* hls){
     (void)mss_config_clk_rst(MSS_PERIPH_FIC2, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
     (void)mss_config_clk_rst(MSS_PERIPH_FIC3, (uint8_t)MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
     (void)rt_hw_uart_init(); //uart初始化
-    // rt_kprintf_uart1("heap: [0x1000000000 - 0x107fffffff] (2GB)\n");
+    // rt_kprintf("heap: [0x1000000000 - 0x107fffffff] (2GB)\n");
     (void)rt_system_heap_init((rt_ubase_t) RT_HW_HEAP_BEGIN, (rt_ubase_t)init_ddr());
     (void)rt_hw_board_init_other(hls);
 }

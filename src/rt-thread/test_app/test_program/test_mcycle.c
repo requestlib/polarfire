@@ -14,14 +14,14 @@ static void thread1_entry(void *parameter)
     rt_thread_delay(1000);
     int end = read_cycle();
     // list_thread();
-    rt_kprintf_uart1("one second = %d cycle\n",end-start);
+    rt_kprintf("one second = %d cycle\n",end-start);
 }
 
 
 int test_mcycle(void)
 {
     int core = rt_hw_cpu_id();
-    rt_kprintf_uart1("Core %d Hello world \n", core);
+    rt_kprintf("Core %d Hello world \n", core);
 
     thread1 = rt_thread_create("thread1",thread1_entry,RT_NULL,THREAD_STACK_SIZE,THREAD_PRIORITY,THREAD_TIMESLICE);
     // thread1.bind_cpu=0;

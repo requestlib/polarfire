@@ -89,7 +89,7 @@ void u54_1(void) {
         if (0x500000U == icount)
         {
             /* Message on uart0 */
-            rt_kprintf_uart1("\nu54_1 print:%d:\n%s",1,g_message34);
+        //     rt_kprintf("\nu54_1 print:%d:\n%s",1,g_message34);
             // MSS_UART_polled_tx(&g_mss_uart0_lo, fmt, sizeof(fmt));
             // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
             // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3,sizeof(g_message3));

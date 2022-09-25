@@ -35,14 +35,14 @@ static void thread3_entry(void *parameter)
     led_g_on();
     primary_cal_test(10000*500);
     end = rt_cpu_self()->tick;
-    rt_kprintf_uart1("thread3 total spent time:%d\n",end-start);
+    rt_kprintf("thread3 total spent time:%d\n",end-start);
 }
 
 int spin()
 {
     rt_thread_delay(5);
     int core = rt_hw_cpu_id();
-    rt_kprintf_uart1("Core %d Hello world \n", core);
+    rt_kprintf("Core %d Hello world \n", core);
     if(core==0){
         tid1 = rt_thread_create("thread1", thread1_entry, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
         if(tid1 != RT_NULL){

@@ -207,9 +207,9 @@ void rt_timer_dump(rt_list_t timer_heads[])
         struct rt_timer *timer = rt_list_entry(list,
                                                struct rt_timer,
                                                row[RT_TIMER_SKIP_LIST_LEVEL - 1]);
-        rt_kprintf_uart1("%d", _timer_count_height(timer));
+        rt_kprintf("%d", _timer_count_height(timer));
     }
-    rt_kprintf_uart1("\n");
+    rt_kprintf("\n");
 }
 #endif /* RT_DEBUG_TIMER */
 
@@ -834,8 +834,8 @@ void list_timer(void){
     rt_list_t *timer_list;
     rt_list_t *timer_node_ptr;
     int level = rt_spin_lock(&_cpus_lock);
-    rt_kprintf_uart1("name init timeout \n");
-    rt_kprintf_uart1(" ---  ---  ---- \n");
+    rt_kprintf("name init timeout \n");
+    rt_kprintf(" ---  ---  ---- \n");
 
     timer_list = &_timer_list[RT_TIMER_SKIP_LIST_LEVEL-1];
     timer_node_ptr = timer_list;
@@ -847,7 +847,7 @@ void list_timer(void){
 
         /* fix up the entry pointer */
         t = rt_list_entry(p, struct rt_timer, row[RT_TIMER_SKIP_LIST_LEVEL-1]);
-        rt_kprintf_uart1("%-*.*s %3d %3d", RT_NAME_MAX, RT_NAME_MAX, (&t->parent)->name, t->init_tick, t->timeout_tick);
+        rt_kprintf("%-*.*s %3d %3d", RT_NAME_MAX, RT_NAME_MAX, (&t->parent)->name, t->init_tick, t->timeout_tick);
        
     }
     rt_spin_unlock(&_cpus_lock, level);

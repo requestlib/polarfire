@@ -92,9 +92,9 @@ void rt_components_board_init(void)
     const struct rt_init_desc *desc;
     for (desc = &__rt_init_desc_rti_board_start; desc < &__rt_init_desc_rti_board_end; desc ++)
     {
-        rt_kprintf_uart1("initialize %s", desc->fn_name);
+        rt_kprintf("initialize %s", desc->fn_name);
         result = desc->fn();
-        rt_kprintf_uart1(":%d done\n", result);
+        rt_kprintf(":%d done\n", result);
     }
 #else
     volatile const init_fn_t *fn_ptr;
@@ -115,12 +115,12 @@ void rt_components_init(void)
     int result;
     const struct rt_init_desc *desc;
 
-    rt_kprintf_uart1("do components initialization.\n");
+    rt_kprintf("do components initialization.\n");
     for (desc = &__rt_init_desc_rti_board_end; desc < &__rt_init_desc_rti_end; desc ++)
     {
-        rt_kprintf_uart1("initialize %s", desc->fn_name);
+        rt_kprintf("initialize %s", desc->fn_name);
         result = desc->fn();
-        rt_kprintf_uart1(":%d done\n", result);
+        rt_kprintf(":%d done\n", result);
     }
 #else
     volatile const init_fn_t *fn_ptr;
@@ -168,17 +168,17 @@ int primary_cpu_entry(HLS_DATA* hls)
     rt_show_version();
     rt_system_timer_init();
     rt_system_scheduler_init();
+    rt_thread_idle_init();
     rt_application_init();
-    rt_hw_local_irq_enable(level);
-     main_hart_done = true;
+    main_hart_done = true;
     while(1);
     return 0;
 }
 int other_cpu_entry(HLS_DATA* hls)
 {
-    while(1) if(main_hart_done)break;
     rt_hw_board_init_other(hls);
-    //list_thread();
+    int level = rt_hw_local_irq_disable();
+    while(1) if(main_hart_done)break;
     rt_system_scheduler_start();
     while(1);
     return 0;
@@ -286,39 +286,4 @@ void rt_application_init(void)
     
 }
 
-/**
- * @brief  This function will call all levels of initialization functions to complete
- *         the initialization of the system, and finally start the scheduler.
- */
-int rtthread_startup(void)
-{
-
-    /* board level initialization
-     * NOTE: please initialize heap inside board initialization.
-     */
-    /* create init_thread */
-    rt_application_init();
-
-    /* start scheduler */
-    rt_system_scheduler_start();
-
-    /* never reach here */
-    int icount=0;
-    while (1)
-    {
-        icount++;
-
-        if (0x500000U == icount)
-        {
-            /* Message on uart0 */
-            rt_kprintf_uart1("\ncontent%d:\n%s",1,"looping");
-            // MSS_UART_polled_tx(&g_mss_uart0_lo, fmt, sizeof(fmt));
-            // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3, sizeof(g_message3));
-            // MSS_UART_polled_tx(&g_mss_uart0_lo, g_message3,sizeof(g_message3));
-            icount=0;
-        }
-    }
-    
-    return 0;
-}
 #endif /* RT_USING_USER_MAIN */

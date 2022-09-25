@@ -11,6 +11,15 @@
 #include <rtthread.h>
 
 #ifdef RT_USING_SMP
+/* Defination of memory barrier macro */
+#define mb()                          \
+    {                                 \
+        asm volatile("fence" ::       \
+                         : "memory"); \
+    }
+#define atomic_set(ptr, val) (*(volatile typeof(*(ptr)) *)(ptr) = val)
+#define atomic_swap(ptr, swp) __sync_lock_test_and_set(ptr, swp)
+
 static struct rt_cpu _cpus[RT_CPUS_NR];
 rt_spinlock _cpus_lock;
 rt_spinlock _uart_lock;
@@ -101,11 +110,19 @@ void rt_spin_lock_init(rt_spinlock *lock)
  *
  * @param   lock is a pointer to the spinlock.
  */
+static int spinlock_trylock(rt_spinlock *lock)
+{
+    int res = atomic_swap(&lock->lock, -1);
+    /* Use memory barrier to keep coherency */
+    mb();
+    return res;
+}
+
 int rt_spin_lock(rt_spinlock *lock)
 {
-    // if(lock->owner != rt_thread_self())
-    exclusive_read_write(&(lock->lock), 1);
     int level = rt_hw_local_irq_disable();
+    if(lock->owner != rt_thread_self())
+        while(spinlock_trylock(lock));
     lock->owner = rt_thread_self();
     return level;
 }
@@ -119,9 +136,10 @@ int rt_spin_lock(rt_spinlock *lock)
 void rt_spin_unlock(rt_spinlock *lock, int level)
 {
     /* Use memory barrier to keep coherency */
-    //mb();
-    //atomic_set(&lock->lock, 0);
-    // asm volatile("nop");
+    // mb();
+    // atomic_set(&lock->lock, 0);
+    lock->lock = 0;
+    asm volatile("nop");
     lock->owner=RT_NULL;
     rt_hw_local_irq_enable(level);
 }
