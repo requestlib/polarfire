@@ -270,17 +270,7 @@ extern void rt_system_power_manager(void);
 static void rt_thread_idle_entry(void *parameter)
 {
 #ifdef RT_USING_SMP
-    if (rt_hw_cpu_id() != 0)
-    {
-        int flag=0;
-        while (1)
-        {
-            int tick = rt_cpu_self()->tick;
-            if(!flag){
-                flag=1;
-            }
-        }
-    }
+    while(1);
 #endif /* RT_USING_SMP */
 
     while (1)
@@ -330,7 +320,7 @@ void rt_thread_idle_init(void)
     rt_ubase_t i;
     char tidle_name[RT_NAME_MAX];
 
-    for (i = 1; i < 2; i++)
+    for (i = 1; i < RT_CPUS_NR; i++)
     {
         rt_sprintf(tidle_name, "tidle%d", i);
         rt_thread_init(&idle[i],
@@ -352,20 +342,20 @@ void rt_thread_idle_init(void)
 #ifdef RT_USING_SMP
     RT_ASSERT(RT_THREAD_PRIORITY_MAX > 2);
 
-    // rt_sem_init(&system_sem, "defunct", 1, RT_IPC_FLAG_FIFO);
+    rt_sem_init(&system_sem, "defunct", 1, RT_IPC_FLAG_FIFO);
 
-    // /* create defunct thread */
-    // rt_thread_init(&rt_system_thread,
-    //         "tsystem",
-    //         rt_thread_system_entry,
-    //         RT_NULL,
-    //         rt_system_stack,
-    //         sizeof(rt_system_stack),
-    //         RT_THREAD_PRIORITY_MAX - 2,
-    //         1);
-    // /* startup */
-    // rt_system_thread.bind_cpu = 1;
-    // rt_thread_startup(&rt_system_thread);
+    /* create defunct thread */
+    rt_thread_init(&rt_system_thread,
+            "tsystem",
+            rt_thread_system_entry,
+            RT_NULL,
+            rt_system_stack,
+            sizeof(rt_system_stack),
+            RT_THREAD_PRIORITY_MAX - 2,
+            1);
+    /* startup */
+    rt_system_thread.bind_cpu = 1;
+    rt_thread_startup(&rt_system_thread);
 #endif
 }
 

@@ -21,7 +21,6 @@ int tick_isr(void)
     uint64_t hart_id = read_csr(mhartid);
     clear_csr(mie, MIP_MTIP);
     CLINT->MTIMECMP[hart_id] = CLINT->MTIME + g_systick_increment[hart_id];
-    rt_kprintf("tick:%d\n",rt_cpu_self()->tick);
     rt_tick_increase();
     set_csr(mie, MIP_MTIP);
 

@@ -22,6 +22,6 @@ void u54_1(void) {
     while (1U)
     {
         list_thread();
-        rt_thread_delay(2);
+        rt_thread_delay(2000);
     }
 }

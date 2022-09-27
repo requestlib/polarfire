@@ -254,36 +254,36 @@ void main_thread_entry(void *parameter)
 void rt_application_init(void)
 {
     rt_thread_t tid1;
-    // rt_thread_t tid2;
-    // rt_thread_t tid3;
-    // rt_thread_t tid4;
+    rt_thread_t tid2;
+    rt_thread_t tid3;
+    rt_thread_t tid4;
     //core1 main
     tid1 = rt_thread_create("main", main_thread_entry, RT_NULL,
-                           RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 1);
+                           RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
     RT_ASSERT(tid1 != RT_NULL);
     tid1->bind_cpu = 1;
     rt_thread_startup(tid1);
     
     //core2 main
-    // tid2 = rt_thread_create("main", main_thread_entry, RT_NULL,
-    //                        RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
-    // RT_ASSERT(tid2 != RT_NULL);
-    // tid2->bind_cpu = 2;
-    // rt_thread_startup(tid2);
+    tid2 = rt_thread_create("main", main_thread_entry, RT_NULL,
+                           RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
+    RT_ASSERT(tid2 != RT_NULL);
+    tid2->bind_cpu = 2;
+    rt_thread_startup(tid2);
 
-    // //core3 main
-    // tid3 = rt_thread_create("main", main_thread_entry, RT_NULL,
-    //                        RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
-    // RT_ASSERT(tid3 != RT_NULL);
-    // tid3->bind_cpu = 3;
-    // rt_thread_startup(tid3);
+    //core3 main
+    tid3 = rt_thread_create("main", main_thread_entry, RT_NULL,
+                           RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
+    RT_ASSERT(tid3 != RT_NULL);
+    tid3->bind_cpu = 3;
+    rt_thread_startup(tid3);
 
-    // //core4 main
-    // tid4 = rt_thread_create("main", main_thread_entry, RT_NULL,
-    //                        RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
-    // RT_ASSERT(tid4 != RT_NULL);
-    // tid4->bind_cpu = 4;
-    // rt_thread_startup(tid4);
+    //core4 main
+    tid4 = rt_thread_create("main", main_thread_entry, RT_NULL,
+                           RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
+    RT_ASSERT(tid4 != RT_NULL);
+    tid4->bind_cpu = 4;
+    rt_thread_startup(tid4);
     
 }
 
