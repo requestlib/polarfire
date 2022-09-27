@@ -18,6 +18,7 @@
 #include "../common/encoding.h"
 #include "../common/mss_mtrap.h"
 #include "board_defs.h"
+#include "cpuport.h"
 #include "mpfs_hal_config/mss_sw_config.h"
 
   .option norvc
@@ -387,88 +388,102 @@ trap_vector:
     # with a user register upon entry to an M-mode trap handler.
     # In this implementation, we are noty using HLS
     # csrrw sp, mscratch, sp                    #copy sp to mscratch, and mscrath to sp
+#ifdef ARCH_RISCV_FPU
+    addi    sp, sp, -32 * FREGBYTES
 
-    addi sp, sp, -INTEGER_CONTEXT_SIZE     # moves sp down stack to make I
-                                           # INTEGER_CONTEXT_SIZE area
-    # Preserve the registers.
-    STORE sp, 2*REGBYTES(sp)               # sp
-    STORE a0, 10*REGBYTES(sp)              # save a0,a1 in the created CONTEXT
-    STORE a1, 11*REGBYTES(sp)
-    STORE ra, 1*REGBYTES(sp)
-    STORE gp, 3*REGBYTES(sp)
-    STORE tp, 4*REGBYTES(sp)
-    STORE t0, 5*REGBYTES(sp)
-    STORE t1, 6*REGBYTES(sp)
-    STORE t2, 7*REGBYTES(sp)
-    STORE s0, 8*REGBYTES(sp)
-    STORE s1, 9*REGBYTES(sp)
-    STORE a2,12*REGBYTES(sp)
-    STORE a3,13*REGBYTES(sp)
-    STORE a4,14*REGBYTES(sp)
-    STORE a5,15*REGBYTES(sp)
-    STORE a6,16*REGBYTES(sp)
-    STORE a7,17*REGBYTES(sp)
-    STORE s2,18*REGBYTES(sp)
-    STORE s3,19*REGBYTES(sp)
-    STORE s4,20*REGBYTES(sp)
-    STORE s5,21*REGBYTES(sp)
-    STORE s6,22*REGBYTES(sp)
-    STORE s7,23*REGBYTES(sp)
-    STORE s8,24*REGBYTES(sp)
-    STORE s9,25*REGBYTES(sp)
-    STORE s10,26*REGBYTES(sp)
-    STORE s11,27*REGBYTES(sp)
-    STORE t3,28*REGBYTES(sp)
-    STORE t4,29*REGBYTES(sp)
-    STORE t5,30*REGBYTES(sp)
-    STORE t6,31*REGBYTES(sp)
+    FSTORE  f0, 0 * FREGBYTES(sp)
+    FSTORE  f1, 1 * FREGBYTES(sp)
+    FSTORE  f2, 2 * FREGBYTES(sp)
+    FSTORE  f3, 3 * FREGBYTES(sp)
+    FSTORE  f4, 4 * FREGBYTES(sp)
+    FSTORE  f5, 5 * FREGBYTES(sp)
+    FSTORE  f6, 6 * FREGBYTES(sp)
+    FSTORE  f7, 7 * FREGBYTES(sp)
+    FSTORE  f8, 8 * FREGBYTES(sp)
+    FSTORE  f9, 9 * FREGBYTES(sp)
+    FSTORE  f10, 10 * FREGBYTES(sp)
+    FSTORE  f11, 11 * FREGBYTES(sp)
+    FSTORE  f12, 12 * FREGBYTES(sp)
+    FSTORE  f13, 13 * FREGBYTES(sp)
+    FSTORE  f14, 14 * FREGBYTES(sp)
+    FSTORE  f15, 15 * FREGBYTES(sp)
+    FSTORE  f16, 16 * FREGBYTES(sp)
+    FSTORE  f17, 17 * FREGBYTES(sp)
+    FSTORE  f18, 18 * FREGBYTES(sp)
+    FSTORE  f19, 19 * FREGBYTES(sp)
+    FSTORE  f20, 20 * FREGBYTES(sp)
+    FSTORE  f21, 21 * FREGBYTES(sp)
+    FSTORE  f22, 22 * FREGBYTES(sp)
+    FSTORE  f23, 23 * FREGBYTES(sp)
+    FSTORE  f24, 24 * FREGBYTES(sp)
+    FSTORE  f25, 25 * FREGBYTES(sp)
+    FSTORE  f26, 26 * FREGBYTES(sp)
+    FSTORE  f27, 27 * FREGBYTES(sp)
+    FSTORE  f28, 28 * FREGBYTES(sp)
+    FSTORE  f29, 29 * FREGBYTES(sp)
+    FSTORE  f30, 30 * FREGBYTES(sp)
+    FSTORE  f31, 31 * FREGBYTES(sp)
+
+#endif
+   /* save thread context to thread stack */
+    addi sp, sp, -32 * REGBYTES
+
+    STORE x1,   1 * REGBYTES(sp)
+
+    csrr  x1, mstatus
+    STORE x1,   2 * REGBYTES(sp)
+
+    csrr  x1, mepc
+    STORE x1, 0 * REGBYTES(sp)
+
+    STORE x4,   4 * REGBYTES(sp)
+    STORE x5,   5 * REGBYTES(sp)
+    STORE x6,   6 * REGBYTES(sp)
+    STORE x7,   7 * REGBYTES(sp)
+    STORE x8,   8 * REGBYTES(sp)
+    STORE x9,   9 * REGBYTES(sp)
+    STORE x10, 10 * REGBYTES(sp)
+    STORE x11, 11 * REGBYTES(sp)
+    STORE x12, 12 * REGBYTES(sp)
+    STORE x13, 13 * REGBYTES(sp)
+    STORE x14, 14 * REGBYTES(sp)
+    STORE x15, 15 * REGBYTES(sp)
+    STORE x16, 16 * REGBYTES(sp)
+    STORE x17, 17 * REGBYTES(sp)
+    STORE x18, 18 * REGBYTES(sp)
+    STORE x19, 19 * REGBYTES(sp)
+    STORE x20, 20 * REGBYTES(sp)
+    STORE x21, 21 * REGBYTES(sp)
+    STORE x22, 22 * REGBYTES(sp)
+    STORE x23, 23 * REGBYTES(sp)
+    STORE x24, 24 * REGBYTES(sp)
+    STORE x25, 25 * REGBYTES(sp)
+    STORE x26, 26 * REGBYTES(sp)
+    STORE x27, 27 * REGBYTES(sp)
+    STORE x28, 28 * REGBYTES(sp)
+    STORE x29, 29 * REGBYTES(sp)
+    STORE x30, 30 * REGBYTES(sp)
+    STORE x31, 31 * REGBYTES(sp)
     # Invoke the handler.
     mv a0, sp                          # a0 <- regs
+    mv s0, a0
     # Please note: mtval is the newer name for register mbadaddr
     # If you get a compile failure here, use the newer name
     # At this point (2019), both are supported in latest compiler
     # older compiler versions only support mbadaddr, so going with this.
     # See: https://github.com/riscv/riscv-gcc/issues/133
+    call rt_interrupt_enter
     csrr a1, mbadaddr                 # useful for anaysis when things go wrong
     csrr a2, mepc
     jal trap_from_machine_mode
+    call rt_interrupt_leave
+
+    mv a0, s0
+    mv sp, s0
+    call rt_scheduler_do_irq_switch
 
 restore_regs:
-    # Restore all of the registers.
-    LOAD ra, 1*REGBYTES(sp)
-    LOAD gp, 3*REGBYTES(sp)
-    LOAD tp, 4*REGBYTES(sp)
-    LOAD t0, 5*REGBYTES(sp)
-    LOAD t1, 6*REGBYTES(sp)
-    LOAD t2, 7*REGBYTES(sp)
-    LOAD s0, 8*REGBYTES(sp)
-    LOAD s1, 9*REGBYTES(sp)
-    LOAD a0,10*REGBYTES(sp)
-    LOAD a1,11*REGBYTES(sp)
-    LOAD a2,12*REGBYTES(sp)
-    LOAD a3,13*REGBYTES(sp)
-    LOAD a4,14*REGBYTES(sp)
-    LOAD a5,15*REGBYTES(sp)
-    LOAD a6,16*REGBYTES(sp)
-    LOAD a7,17*REGBYTES(sp)
-    LOAD s2,18*REGBYTES(sp)
-    LOAD s3,19*REGBYTES(sp)
-    LOAD s4,20*REGBYTES(sp)
-    LOAD s5,21*REGBYTES(sp)
-    LOAD s6,22*REGBYTES(sp)
-    LOAD s7,23*REGBYTES(sp)
-    LOAD s8,24*REGBYTES(sp)
-    LOAD s9,25*REGBYTES(sp)
-    LOAD s10,26*REGBYTES(sp)
-    LOAD s11,27*REGBYTES(sp)
-    LOAD t3,28*REGBYTES(sp)
-    LOAD t4,29*REGBYTES(sp)
-    LOAD t5,30*REGBYTES(sp)
-    LOAD t6,31*REGBYTES(sp)
-    LOAD sp, 2*REGBYTES(sp)
-    addi sp, sp, +INTEGER_CONTEXT_SIZE  # moves sp up stack to reclaim
-                                        # INTEGER_CONTEXT_SIZE area
-    mret
+    tail   rt_hw_context_switch_exit
 
  /*****************************************************************************/
  /******************************interrupt handeling above here*****************/

@@ -86,6 +86,8 @@ void rt_scheduler_switch_sethook(void (*hook)(struct rt_thread *tid))
 static void _rt_scheduler_stack_check(struct rt_thread *thread)
 {
     RT_ASSERT(thread != RT_NULL);
+    if((rt_ubase_t)thread->sp <= (rt_ubase_t)thread->stack_addr)
+        rt_kprintf("thread:%s->sp < thread->stack_addr\n");
 
 #ifdef ARCH_CPU_STACK_GROWS_UPWARD
     if (*((rt_uint8_t *)((rt_ubase_t)thread->stack_addr + thread->stack_size - 1)) != '#' ||
@@ -290,6 +292,7 @@ void rt_schedule(void)
     struct rt_cpu    *pcpu;
     int cpu_id;
 
+//    cpu_id=1;
     /* disable interrupt */
     level  = rt_hw_interrupt_disable();
 
@@ -368,7 +371,8 @@ void rt_schedule(void)
                 _rt_scheduler_stack_check(to_thread);
 #endif /* RT_USING_OVERFLOW_CHECK */
 
-                RT_OBJECT_HOOK_CALL(rt_scheduler_switch_hook, (current_thread));
+                RT_OBJECT_HOOK_CALL(rt_scheduler_switch_hook
+                        , (current_thread));
 
                 rt_hw_context_switch((rt_ubase_t)&current_thread->sp,
                         (rt_ubase_t)&to_thread->sp, to_thread);

@@ -834,8 +834,8 @@ void list_timer(void){
     rt_list_t *timer_list;
     rt_list_t *timer_node_ptr;
     int level = rt_spin_lock(&_cpus_lock);
-    rt_kprintf("name init timeout \n");
-    rt_kprintf(" ---  ---  ---- \n");
+    rt_kprintf("name       init timeout \n");
+    rt_kprintf(" ---       ---  ---- \n");
 
     timer_list = &_timer_list[RT_TIMER_SKIP_LIST_LEVEL-1];
     timer_node_ptr = timer_list;

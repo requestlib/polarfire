@@ -11,13 +11,13 @@
 #define RT_ALIGN_SIZE 8
 #define RT_THREAD_PRIORITY_32
 #define RT_THREAD_PRIORITY_MAX 32
-#define RT_TICK_PER_SECOND 1000
+#define RT_TICK_PER_SECOND 1
 #define RT_USING_OVERFLOW_CHECK
 // #define RT_USING_HOOK
 #define RT_PRINTF_LONGLONG
 // #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
-#define IDLE_THREAD_STACK_SIZE 4096
+#define IDLE_THREAD_STACK_SIZE 8192
 #define SYSTEM_THREAD_STACK_SIZE 4096
 
 /* kservice optimization */
@@ -58,7 +58,7 @@
 #define ARCH_CPU_64BIT
 #define ARCH_RISCV
 #define ARCH_RISCV_FPU
-#define ARCH_RISCV_FPU_S
+#define ARCH_RISCV_FPU_D
 #define ARCH_RISCV64
 
 /* RT-Thread Components */

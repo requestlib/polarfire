@@ -59,6 +59,6 @@ void secondary_cpu_c_start(void)
 
 void rt_hw_secondary_cpu_idle_exec(void)
 {
-    asm volatile ("wfi");
+    asm volatile ("nop");
 }
 #endif /*RT_USING_SMP*/
