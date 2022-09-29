@@ -585,6 +585,7 @@ struct rt_cpu
 
     rt_uint8_t current_priority;
     rt_list_t priority_table[RT_THREAD_PRIORITY_MAX];
+    rt_list_t local_timer_list[RT_TIMER_SKIP_LIST_LEVEL];
 #if RT_THREAD_PRIORITY_MAX > 32
     rt_uint32_t priority_group;
     rt_uint8_t ready_table[32];

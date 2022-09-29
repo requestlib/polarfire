@@ -1,0 +1,48 @@
+/*******************************************************************************
+ * Copyright 2019-2021 Microchip FPGA Embedded Systems Solutions.
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Application code running on U54_3
+ *
+ */
+#include <stdio.h>
+#include <string.h>
+#include "mpfs_hal/mss_hal.h"
+#include "drivers/mss/mss_mmuart/mss_uart.h"
+#include<rtthread.h>
+#include<board.h>
+#include<rthw.h>
+#include<test_tool.h>
+
+#define THREAD_PRIORITY 10
+#define THREAD_STACK_SIZE 4096
+#define THREAD_TIMESLICE 5
+static rt_thread_t tid1 = RT_NULL;
+static rt_thread_t tid5 = RT_NULL;
+static rt_thread_t tid6 = RT_NULL;
+
+/* 线程1 入口函数*/
+static void thread1_entry(void *parameter)
+{
+    //长时间保持自旋锁
+   int level = rt_spin_lock(&test_spinlock);
+   primary_cal_test(3000000*5);  //4.5s
+   rt_spin_unlock(&test_spinlock, level);
+   rt_kprintf("thread1 done!\n");
+}
+
+void u54_1(void){
+    // 测试1 存在空闲核
+    int core = rt_hw_cpu_id();
+    rt_kprintf("Core %d Hello world \n", core);
+    tid1 = rt_thread_create("thread1", thread1_entry, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
+    if(tid1 != RT_NULL){
+        tid1->bind_cpu=1;
+    }
+    rt_thread_startup(tid1);
+
+}
+
+
+

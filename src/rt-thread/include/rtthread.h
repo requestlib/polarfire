@@ -433,6 +433,8 @@ int rt_spin_lock_irqsave(rt_spinlock *lock);
 void rt_spin_unlock_irqrestore(rt_spinlock *lock, int level);
 
 extern rt_spinlock _cpus_lock;
+extern rt_spinlock _timer_lock;
+extern rt_spinlock test_spinlock;
 extern rt_spinlock _uart_lock;
 extern volatile long uartlock;
 extern rt_spinlock _rt_critical_lock;

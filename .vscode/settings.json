@@ -7,6 +7,9 @@
         "rtdef.h": "c",
         "rtconfig.h": "c",
         "mss_uart.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "rthw.h": "c",
+        "test_tool.h": "c",
+        "rtservice.h": "c"
     }
 }

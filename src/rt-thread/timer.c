@@ -403,6 +403,7 @@ rt_err_t rt_timer_start(rt_timer_t timer)
 #endif /* RT_USING_TIMER_SOFT */
     {
         /* insert timer to system timer list */
+        // timer_list = rt_cpu_self()->timer_list;
         timer_list = _timer_list;
     }
 
@@ -597,7 +598,11 @@ void rt_timer_check(void)
     current_tick = rt_tick_get();
 
     /* disable interrupt */
-    level = rt_hw_interrupt_disable();
+    // level = rt_hw_interrupt_disable();
+    level = rt_spin_lock(&_timer_lock);
+
+    // rt_list_t timer_list = rt_cpu_self()->timer_list[RT_TIMER_SKIP_LIST_LEVEL - 1];
+    // while (!rt_list_isempty(&timer_list))
     while (!rt_list_isempty(&_timer_list[RT_TIMER_SKIP_LIST_LEVEL - 1]))
     {
         t = rt_list_entry(_timer_list[RT_TIMER_SKIP_LIST_LEVEL - 1].next,
@@ -646,7 +651,8 @@ void rt_timer_check(void)
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(level);
+    // rt_hw_interrupt_enable(level);
+    rt_spin_unlock(&_timer_lock, level);
 
     RT_DEBUG_LOG(RT_DEBUG_TIMER, ("timer check leave\n"));
 }
@@ -659,6 +665,7 @@ void rt_timer_check(void)
 rt_tick_t rt_timer_next_timeout_tick(void)
 {
     return _timer_list_next_timeout(_timer_list);
+    // return _timer_list_next_timeout(rt_cpu_self()->timer_list);
 }
 
 #ifdef RT_USING_TIMER_SOFT
@@ -793,6 +800,14 @@ void rt_system_timer_init(void)
     {
         rt_list_init(_timer_list + i);
     }
+
+    // for (int j=0;j<RT_CPUS_NR;j++){
+    //     rt_list_t* timer_list = rt_cpu_index(j)->timer_list;
+    //     for (int i = 0; i < sizeof(timer_list) / sizeof(timer_list[0]); i++)
+    //     {
+    //         rt_list_init(timer_list + i);
+    //     }
+    // }
 }
 
 /**
@@ -831,11 +846,12 @@ void rt_system_timer_thread_init(void)
 
 //展示所有定时器状态
 void list_timer(void){
+    int cpu_id = rt_hw_cpu_id();
     rt_list_t *timer_list;
     rt_list_t *timer_node_ptr;
     int level = rt_spin_lock(&_cpus_lock);
-    rt_kprintf("name       init timeout \n");
-    rt_kprintf(" ---       ---  ---- \n");
+    rt_kprintf("name       init timeout \r\n");
+    rt_kprintf(" ---       ---  ---- \r\n");
 
     timer_list = &_timer_list[RT_TIMER_SKIP_LIST_LEVEL-1];
     timer_node_ptr = timer_list;
@@ -847,7 +863,7 @@ void list_timer(void){
 
         /* fix up the entry pointer */
         t = rt_list_entry(p, struct rt_timer, row[RT_TIMER_SKIP_LIST_LEVEL-1]);
-        rt_kprintf("%-*.*s %3d %3d", RT_NAME_MAX, RT_NAME_MAX, (&t->parent)->name, t->init_tick, t->timeout_tick);
+        rt_kprintf("%-*.*s %3d %3d\r\n", RT_NAME_MAX, RT_NAME_MAX, (&t->parent)->name, t->init_tick, t->timeout_tick);
        
     }
     rt_spin_unlock(&_cpus_lock, level);

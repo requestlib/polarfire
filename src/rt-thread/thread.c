@@ -955,10 +955,11 @@ rt_uint32_t get_thread_distribute_cpu(rt_thread_t dst_thread)
     rt_uint32_t all_cpus=0;
 
     // 生成候选池
-    for(int i=0;i<RT_CPUS_NR;i++){
-        if(rt_cpu_index(i)->current_priority>RT_THREAD_PRIORITY_MAX-5)
+    for(int i=1;i<RT_CPUS_NR;i++){
+        struct rt_cpu* current_cpu = rt_cpu_index(i);
+        if(current_cpu->current_priority>RT_THREAD_PRIORITY_MAX-5)
             free_cpus |= (1<<i);
-        if(rt_cpu_index(i)->current_priority>dst_thread->current_priority)
+        if(current_cpu->current_priority>dst_thread->current_priority)
             low_priority_cpus |= (1<<i);
         all_cpus |= (1<<i);
     }
@@ -975,9 +976,16 @@ rt_uint32_t get_thread_distribute_cpu(rt_thread_t dst_thread)
 // 从候选池中选出利用率最低的CPU
 rt_uint32_t get_lowest_usage_cpu(rt_uint32_t candidate_cpus){
     rt_uint32_t dst_cpuid=0;
+    for(int i=1;i<RT_CPUS_NR;i++){
+        if(candidate_cpus&(1<<i)){
+            dst_cpuid=i;
+        }
+    }
+
+
     if(rt_hw_cpu_id()==0){
         int min_usage=100;
-        for(int i=0;i<RT_CPUS_NR;i++){
+        for(int i=1;i<RT_CPUS_NR;i++){
             if(candidate_cpus&(1<<i)){
                 int cur_cpu_usage = get_cpu_usage_int(i);
                 if(cur_cpu_usage<min_usage){
@@ -989,7 +997,7 @@ rt_uint32_t get_lowest_usage_cpu(rt_uint32_t candidate_cpus){
     }
     else{
         float min_usage=100.0;
-        for(int i=0;i<RT_CPUS_NR;i++){
+        for(int i=1;i<RT_CPUS_NR;i++){
             if(candidate_cpus&(1<<i)){
                 float cur_cpu_usage = get_cpu_usage_float(i);
                 if(cur_cpu_usage<min_usage){

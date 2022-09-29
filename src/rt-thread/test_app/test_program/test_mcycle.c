@@ -10,9 +10,9 @@ static rt_thread_t thread1;
 /* 线程 1 接收邮箱1的内容 */
 static void thread1_entry(void *parameter)
 {
-    int start = read_cycle();
+    int start = read_csr(mcycle);
     rt_thread_delay(1000);
-    int end = read_cycle();
+    int end = read_csr(mcycle);
     // list_thread();
     rt_kprintf("one second = %d cycle\n",end-start);
 }

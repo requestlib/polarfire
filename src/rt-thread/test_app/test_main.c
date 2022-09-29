@@ -53,7 +53,7 @@ static void moniter_thread_entry(void *parameter){
         rt_thread_delay(1000);
         for(int i=0;i<RT_CPUS_NR;i++){
             rt_kprintf("cpu[%d] usage:",i);
-            rt_kprintf(" %d%%\n", (int)get_cpu_usage(i));
+            rt_kprintf(" %d%%\n", (int)get_cpu_usage_float(i));
             rt_kprintf("total_tick:%d, idle_tick:%d\n",rt_cpu_index(i)->recent_total_ticks,rt_cpu_index(i)->idle_ticks);
         }
         list_thread();

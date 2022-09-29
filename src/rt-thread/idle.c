@@ -320,7 +320,7 @@ void rt_thread_idle_init(void)
     rt_ubase_t i;
     char tidle_name[RT_NAME_MAX];
 
-    for (i = 1; i < RT_CPUS_NR; i++)
+    for (i = 1; i < 5; i++)
     {
         rt_sprintf(tidle_name, "tidle%d", i);
         rt_thread_init(&idle[i],
@@ -330,7 +330,7 @@ void rt_thread_idle_init(void)
                 &rt_thread_stack[i][0],
                 sizeof(rt_thread_stack[i]),
                 RT_THREAD_PRIORITY_MAX - 1,
-                1);
+                5);
         idle[i].bind_cpu=i;
 #ifdef RT_USING_SMP
         rt_thread_control(&idle[i], RT_THREAD_CTRL_BIND_CPU, (void*)i);

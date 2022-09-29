@@ -22,6 +22,8 @@
 
 static struct rt_cpu _cpus[RT_CPUS_NR];
 rt_spinlock _cpus_lock;
+rt_spinlock _timer_lock;
+rt_spinlock test_spinlock;
 rt_spinlock _uart_lock;
 volatile long uartlock;
 
@@ -120,9 +122,9 @@ static int spinlock_trylock(rt_spinlock *lock)
 
 int rt_spin_lock(rt_spinlock *lock)
 {
-    int level = rt_hw_local_irq_disable();
     if(lock->owner != rt_thread_self())
         while(spinlock_trylock(lock));
+    int level = rt_hw_local_irq_disable(); 
     lock->owner = rt_thread_self();
     return level;
 }
