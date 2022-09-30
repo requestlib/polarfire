@@ -601,6 +601,7 @@ struct rt_cpu
 #ifdef RT_CALCULATE_CPU_USAGE
     rt_tick_t recent_total_ticks;
     rt_tick_t idle_ticks;
+    rt_tick_t wait_spin_time;
 #endif   
 };
 
@@ -794,6 +795,7 @@ struct rt_mailbox
     rt_uint16_t          entry;                         /**< index of messages in msg_pool */
     rt_uint16_t          in_offset;                     /**< input offset of the message buffer */
     rt_uint16_t          out_offset;                    /**< output offset of the message buffer */
+    rt_uint16_t          reserved;                      /**< reserved field */
 
     rt_list_t            suspend_sender_thread;         /**< sender thread suspended on this mailbox */
 };

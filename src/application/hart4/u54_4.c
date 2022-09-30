@@ -21,6 +21,5 @@ void u54_4(void){
     int core = rt_hw_cpu_id();
     rt_kprintf("Core %d Hello world \n", core);
     while(1);
-
 }
 
