@@ -16,63 +16,56 @@
 #include<test_tool.h>
 
 #define THREAD_PRIORITY 15
-#define THREAD_TIMESLICE 20
-#define OP_NR_MAIL 15
+#define THREAD_STACK_SIZE 4096
+#define THREAD_TIMESLICE 5
+static rt_thread_t tid1 = RT_NULL;
+static rt_thread_t tid5 = RT_NULL;
+static rt_thread_t tid6 = RT_NULL;
+static rt_thread_t tid_moniter = RT_NULL;
+static int para1 = 0;
 
-static struct rt_mailbox mb1;
-static char mb_str1[] = "first mail.";
-static char mb_str3[] = "over";
-static char mb_pool1[128];
-
-static char thread1_stack[4096];
-static struct rt_thread thread1;
-static char thread3_stack[4096];
-static struct rt_thread thread3;
-
-/* 线程 3 入口 发送邮件到邮箱1*/
-static void thread3_entry(void *parameter)
+/* 线程1 入口函数*/
+void thread_entry(void *parameter)
 {
-//    for(int i=0;i<OP_NR_MAIL;i++) rt_mb_send(&mb1, (rt_uint32_t)&mb_str1);
-//    rt_mb_send(&mb1, (rt_uint32_t)&mb_str3);
-    while(1);
+    int cal_num = 80000;
+    while(1){
+        rt_thread_delay(10);
+        primary_cal_test(cal_num);
+        // rt_kprintf("thread1\r\n");
+    }
 }
 
-
-/* 线程 1 接收邮箱1的内容 */
-static void thread1_entry(void *parameter)
-{
-    char *str;
+void moniter_thread_entry(void *parameter){
     int count=0;
-//    while (1)
-//    {
-//        if (rt_mb_recv(&mb1, (rt_uint32_t *)&str, RT_WAITING_FOREVER) == RT_EOK)
-//        {
-//            count++;
-//            if(str == mb_str3)break;
-//        }
-//
-//    }
-    rt_kprintf("mailbox wait spinlock:%d\r\n",rt_cpu_self()->wait_spin_time);
-    rt_mb_detach(&mb1);
+    while(1){
+        rt_thread_delay(2000);
+        for(int i=1;i<RT_CPUS_NR;i++){
+            rt_kprintf("cpu[%d] usage:",i);
+            rt_kprintf(" %d%%", (int)get_cpu_usage_float(i));
+            rt_kprintf("   total_tick:%d, idle_tick:%d\n",rt_cpu_index(i)->recent_total_ticks,rt_cpu_index(i)->idle_ticks);
+        }
+        list_thread();
+    }
 }
 
-
-
-void u54_1(void)
-{
+void u54_1(void){
+    // 测试1 存在空闲核
     int core = rt_hw_cpu_id();
     rt_kprintf("Core %d Hello world \n", core);
+    tid1 = rt_thread_create("thread1", thread_entry, &para1, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
+    if(tid1 != RT_NULL){
+        tid1->bind_cpu=1;
+    }
 
-    rt_err_t result = rt_mb_init(&mb1,"mbt1",&mb_pool1[0],sizeof(mb_pool1) / 4, RT_IPC_FLAG_FIFO);   //初始化邮箱1 
-    mb1.reserved=1;
+    tid_moniter = rt_thread_create("moniter", moniter_thread_entry, RT_NULL, THREAD_STACK_SIZE*4, THREAD_PRIORITY, THREAD_TIMESLICE);
+    if(tid_moniter != RT_NULL){
+        tid_moniter->bind_cpu=1;
+    }
+    rt_thread_startup(tid_moniter);
+    rt_thread_startup(tid1);
+    // while(1);
 
-    //thread1
-    rt_thread_init(&thread1,"thread1",thread1_entry,RT_NULL,&thread1_stack[0],sizeof(thread1_stack),THREAD_PRIORITY, THREAD_TIMESLICE);
-    thread1.bind_cpu=1;
-    rt_thread_startup(&thread1);
-
-    rt_thread_init(&thread3,"thread3",thread3_entry,RT_NULL,&thread3_stack[0],sizeof(thread3_stack),THREAD_PRIORITY, THREAD_TIMESLICE);
-    thread3.bind_cpu=2;
-    rt_thread_startup(&thread3);
-    while(1);
 }
+
+
+

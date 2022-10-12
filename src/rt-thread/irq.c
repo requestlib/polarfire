@@ -15,6 +15,7 @@
 #include <rthw.h>
 #include <rtthread.h>
 #include <rtdef.h>
+#include <mpfs_hal/common/mss_clint.h>
 
 #ifdef RT_USING_HOOK
 
@@ -158,7 +159,7 @@ void trigger_ipi_irq(ipi_irq_t ipi_irq, rt_uint8_t dest_core_id){
                 dest_cpu->ipi_type=IPI_CALL_FUNC;
                 dest_cpu->ipi_func=ipi_irq->func;
                 dest_cpu->param=ipi_irq->parameter;
-                //clint_ipi_send(i);
+                raise_soft_interrupt(i);
             }
         }
         else{
@@ -168,7 +169,7 @@ void trigger_ipi_irq(ipi_irq_t ipi_irq, rt_uint8_t dest_core_id){
                     dest_cpu->ipi_type=IPI_CALL_FUNC;
                     dest_cpu->ipi_func=ipi_irq->func;
                     dest_cpu->param=ipi_irq->parameter;
-                    //clint_ipi_send(dest_core_id);
+                    raise_soft_interrupt(i);
                 }
                 else rt_cpu_index(i)->ipi_type=RT_NULL;
             }
@@ -179,7 +180,7 @@ void trigger_ipi_irq(ipi_irq_t ipi_irq, rt_uint8_t dest_core_id){
             for(int i=0;i<RT_CPUS_NR;i++){
                 struct rt_cpu *dest_cpu = rt_cpu_index(dest_core_id);
                 dest_cpu->ipi_type=IPI_RESCHEDULE;
-                //clint_ipi_send(i);
+                raise_soft_interrupt(i);
             }
         }
         else{
@@ -187,7 +188,8 @@ void trigger_ipi_irq(ipi_irq_t ipi_irq, rt_uint8_t dest_core_id){
                 if(i==dest_core_id){
                     struct rt_cpu *dest_cpu = rt_cpu_index(dest_core_id);
                     dest_cpu->ipi_type=IPI_RESCHEDULE;
-                    //clint_ipi_send(dest_core_id);
+                    raise_soft_interrupt(i);
+
                 }
                 else rt_cpu_index(i)->ipi_type=RT_NULL;
             }

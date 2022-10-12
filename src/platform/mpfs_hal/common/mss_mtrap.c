@@ -15,7 +15,7 @@
  *
  */
 #include "mpfs_hal/mss_hal.h"
-
+#include "rtthread.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -740,7 +740,24 @@ void trap_from_machine_mode(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc)
     }
     else if (((mcause & MCAUSE_INT) == MCAUSE_INT) && ((mcause & MCAUSE_CAUSE)  == IRQ_M_SOFT))
     {
-        handle_m_soft_interrupt();
+
+        struct rt_cpu* self_cpu=rt_cpu_self();
+        rt_kprintf("core[%d]:sort_interrupt ipi_type:%d\r\n",rt_hw_cpu_id(),self_cpu->ipi_type);
+//        switch (self_cpu->ipi_type)
+//        {
+//        case IPI_CALL_FUNC:
+//            self_cpu->ipi_func(self_cpu->param);
+//            break;
+//        case IPI_RESCHEDULE:
+//            rt_kprintf("core[%d]:sort_interrupt here\n\n",rt_hw_cpu_id());
+//            // rt_schedule();
+//            break;
+//        default:
+//            break;
+//        }
+        self_cpu->ipi_type=0;
+        clear_soft_interrupt();
+    
     }
     else if (((mcause & MCAUSE_INT) == MCAUSE_INT) && ((mcause & MCAUSE_CAUSE)  == IRQ_M_TIMER))
     {

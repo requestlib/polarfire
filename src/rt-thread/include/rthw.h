@@ -86,6 +86,7 @@ struct rt_irq_desc
 /*
  * Interrupt interfaces
  */
+int rt_hw_clint_ipi_enable(void);
 void rt_hw_interrupt_init(void);
 void rt_hw_interrupt_mask(int vector);
 void rt_hw_interrupt_umask(int vector);

@@ -177,9 +177,8 @@ int primary_cpu_entry(HLS_DATA* hls)
 int other_cpu_entry(HLS_DATA* hls)
 {
     rt_hw_board_init_other(hls);
+    // rt_hw_clint_ipi_enable();
     while(1) if(main_hart_done)break;
-    // if(rt_hw_cpu_id()!=0)
-    // list_thread();
     rt_kprintf("current core:%d\r\n",rt_hw_cpu_id());
     rt_system_scheduler_start();
     while(1);
