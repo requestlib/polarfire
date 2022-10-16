@@ -187,7 +187,8 @@ static rt_err_t _thread_init(struct rt_thread *thread,
 
 #ifdef RT_USING_SMP
     /* not bind on any cpu */
-    thread->bind_cpu = get_thread_distribute_cpu(thread);
+    // thread->bind_cpu = get_thread_distribute_cpu(thread);
+    thread->bind_cpu = RT_CPUS_NR;
     thread->oncpu = RT_CPU_DETACHED;
 
     /* lock init */

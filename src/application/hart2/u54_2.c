@@ -41,7 +41,7 @@ void u54_2(void){
 
     tid2 = rt_thread_create("thread2", thread_entry2, &para2, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
     if(tid2 != RT_NULL){
-        tid2->bind_cpu=2;
+        // tid2->bind_cpu=2;
         rt_thread_startup(tid2);
     }
 
