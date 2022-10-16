@@ -41,7 +41,7 @@ rt_tick_t rt_tick_get(void)
 {
     /* return the global tick */
 #ifdef RT_USING_SMP
-    return rt_cpu_self()->tick;
+    return rt_cpu_index(1)->tick;
 #else
     return rt_tick;
 #endif
@@ -110,7 +110,8 @@ void rt_tick_increase(void)
         rt_hw_interrupt_enable(level);
     }
     /* check timer */
-    rt_timer_check();
+    if(rt_hw_cpu_id()==1)
+        rt_timer_check();
 }
 
 /**

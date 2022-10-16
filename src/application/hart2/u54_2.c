@@ -29,6 +29,7 @@ void thread_entry2(void *parameter)
     while(1){
         primary_cal_test(cal_num);
         rt_thread_delay(1000);
+        list_timer();
         rt_kprintf("thread2\n\n");
     }
 }

@@ -52,17 +52,17 @@ void u54_1(void){
     // 测试1 存在空闲核
     int core = rt_hw_cpu_id();
     rt_kprintf("Core %d Hello world \n", core);
-    tid1 = rt_thread_create("thread1", thread_entry, &para1, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
-    if(tid1 != RT_NULL){
-        tid1->bind_cpu=1;
-    }
+    // tid1 = rt_thread_create("thread1", thread_entry, &para1, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
+    // if(tid1 != RT_NULL){
+    //     tid1->bind_cpu=1;
+    // }
 
     tid_moniter = rt_thread_create("moniter", moniter_thread_entry, RT_NULL, THREAD_STACK_SIZE*4, THREAD_PRIORITY, THREAD_TIMESLICE);
     if(tid_moniter != RT_NULL){
         tid_moniter->bind_cpu=1;
     }
     rt_thread_startup(tid_moniter);
-    rt_thread_startup(tid1);
+    // rt_thread_startup(tid1);
     // while(1);
 
 }

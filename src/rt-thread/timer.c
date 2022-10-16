@@ -599,7 +599,7 @@ void rt_timer_check(void)
 
     /* disable interrupt */
     // level = rt_hw_interrupt_disable();
-    level = rt_spin_lock(&_timer_lock);
+    level = rt_hw_local_irq_disable();
 
     // rt_list_t timer_list = rt_cpu_self()->timer_list[RT_TIMER_SKIP_LIST_LEVEL - 1];
     // while (!rt_list_isempty(&timer_list))
@@ -652,7 +652,8 @@ void rt_timer_check(void)
 
     /* enable interrupt */
     // rt_hw_interrupt_enable(level);
-    rt_spin_unlock(&_timer_lock, level);
+    rt_hw_local_irq_enable(level);
+    // rt_spin_unlock(&_timer_lock, level);
 
     RT_DEBUG_LOG(RT_DEBUG_TIMER, ("timer check leave\n"));
 }
