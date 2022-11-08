@@ -37,11 +37,11 @@ void u54_3(void){
     int core = rt_hw_cpu_id();
     rt_kprintf("Core %d Hello world \n", core);
 
-    tid3 = rt_thread_create("thread3", thread_entry3, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY+10, THREAD_TIMESLICE);
-    if(tid3 != RT_NULL){
-        // tid3->bind_cpu = 3;
-        rt_thread_startup(tid3);
-    }
+    // tid3 = rt_thread_create("thread3", thread_entry3, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY+10, THREAD_TIMESLICE);
+    // if(tid3 != RT_NULL){
+    //     // tid3->bind_cpu = 3;
+    //     rt_thread_startup(tid3);
+    // }
 
 }
 

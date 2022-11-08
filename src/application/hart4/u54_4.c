@@ -39,11 +39,11 @@ void u54_4(void){
     int core = rt_hw_cpu_id();
     rt_kprintf("Core %d Hello world \n", core);
 
-    tid4 = rt_thread_create("thread4", thread_entry4, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY+10, THREAD_TIMESLICE);
-    if(tid4 != RT_NULL){
-        // tid4->bind_cpu=4;
-        rt_thread_startup(tid4);
-    }
+    // tid4 = rt_thread_create("thread4", thread_entry4, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY+10, THREAD_TIMESLICE);
+    // if(tid4 != RT_NULL){
+    //     // tid4->bind_cpu=4;
+    //     rt_thread_startup(tid4);
+    // }
 
 }
 
